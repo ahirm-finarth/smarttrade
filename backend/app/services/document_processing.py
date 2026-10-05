@@ -139,7 +139,7 @@ def process_document(
         for _attempt in range(2):
             extracted = extract_document(client, parsed, classification.document_type, feedback)
             facts = build_raw_facts(run, extracted, parsed)
-            normalize_and_validate(facts, classification.document_type, parsed)
+            reconciliations = normalize_and_validate(facts, classification.document_type, parsed)
             feedback = [
                 f"{f.field_name}: {f.review_reason}; quote label and exact value together"
                 for f in facts
@@ -147,7 +147,11 @@ def process_document(
             ]
             if not feedback:
                 break
-        run.metadata_json = {**run.metadata_json, "extraction_attempts": _attempt + 1}
+        run.metadata_json = {
+            **run.metadata_json,
+            "extraction_attempts": _attempt + 1,
+            "evidence_reconciliation": reconciliations,
+        }
         session.add_all(facts)
         session.flush()
         review = (

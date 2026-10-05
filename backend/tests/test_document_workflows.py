@@ -192,6 +192,9 @@ def test_document_api_end_to_end(context, monkeypatch):
             assert client.get(prefix).json()["selected_version"]["status"] == "UPLOADED"
             assert "storage_path" not in client.get(prefix).text
             assert client.get(prefix + "/source").content == PDF.read_bytes()
+            image = client.get(prefix + "/pages/1/image")
+            assert image.status_code == 200 and image.content.startswith(b"\x89PNG")
+            assert client.get(prefix + "/pages/99/image").status_code == 404
             assert client.post(prefix + "/process").json()["status"] == "COMPLETED"
             assert len(client.get(prefix + "/facts").json()) == 2
             assert client.post(prefix + "/reprocess").json()["run_number"] == 2
@@ -225,7 +228,7 @@ def test_bad_source_quotes_get_one_bounded_repair_attempt(context):
             if schema.__name__ != "Classification":
                 self.attempts += 1
                 if self.attempts == 1:
-                    result.fields.invoice_number.source_text = "Invoice reference"
+                    result.fields.invoice_number.source_text = "Invented quotation"
                 else:
                     assert "Validation feedback" in messages[1]["content"]
             return result

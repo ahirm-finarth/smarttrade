@@ -100,6 +100,7 @@ class CaseDocument(CaseRelated, Base):
     received: Mapped[bool | None]
     file_name: Mapped[str | None] = mapped_column(String(255))
     extraction_confidence: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
+    versions: Mapped[list["DocumentVersion"]] = relationship(cascade="all, delete-orphan")
 
 
 class TradeLine(CaseRelated, Base):
@@ -175,3 +176,7 @@ class DemoScreeningReference(Base):
     country: Mapped[str | None] = mapped_column(String(2))
     status: Mapped[str | None] = mapped_column(String(32))
     note: Mapped[str | None] = mapped_column(Text)
+
+
+# Register the Phase 2 tables after the shared declarative base and case models.
+from app.models.documents import DocumentVersion  # noqa: E402, F401

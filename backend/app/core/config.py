@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
     llm_protocol: str = "unconfigured"
+    document_storage_root: Path = ROOT / "storage"
+    document_max_bytes: int = Field(20 * 1024 * 1024, ge=1024, le=100 * 1024 * 1024)
+    document_max_pages: int = Field(100, ge=1, le=1000)
+    document_max_text_chars: int = Field(60000, ge=1000, le=200000)
+    llm_timeout_seconds: int = Field(180, ge=1, le=300)
     cors_origins: list[str] = ["http://localhost:3000"]
 
     @field_validator("database_url", "mysql_password", "llm_api_key", mode="before")

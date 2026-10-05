@@ -26,3 +26,8 @@ test-results/
 
 # Next.js regenerates these paths differently for dev and production.
 **/next-env.d.ts
+
+# Runtime originals and local evaluation output are not reproducible fixtures.
+/storage/
+reports/local/
+Smart_Trade_Synthetic_Demo_Pack.zip

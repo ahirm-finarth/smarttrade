@@ -23,3 +23,6 @@ node_modules/
 .impeccable/review/
 playwright-report/
 test-results/
+
+# Next.js regenerates these paths differently for dev and production.
+**/next-env.d.ts

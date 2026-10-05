@@ -1,0 +1,15 @@
+rule_id,playbook,control_type,logic,default_route
+DOC-COMPLETE-001,All,Hard gate,All mandatory document types must be present before final decision.,Trade Maker
+LC-AMOUNT-001,Import LC / Export LC,Discrepancy,Invoice total must not exceed credit amount plus configured tolerance.,Trade Compliance
+LC-QTY-001,Import LC / Export LC,Discrepancy,Invoice and packing-list quantity must reconcile with LC quantity and tolerance.,Trade Compliance
+LC-SHIP-DATE-001,Export LC,Hard gate,On-board shipment date must be within allowed shipment period.,Trade Operations
+LC-PO-REF-001,Export LC,Discrepancy,Purchase-order reference must reconcile across LC and invoice.,Trade Operations
+DOC-INV-REF-001,All,Risk referral,Invoice fingerprint must not match another financed/presented invoice unless approved linkage is found.,Trade Risk
+SCREEN-SANCTIONS-001,All,Hard gate,Confirmed sanctions match blocks workflow; potential match routes to approved screening process.,Financial Crime
+ROUTE-PORT-001,Import LC / Export LC,Risk referral,Route/port/vessel matches against current approved policy lists.,Trade Compliance
+PRICE-FAIR-001,Import LC / Export LC,Risk referral,Unit price outside configured range requires analyst review.,Trade Risk
+BG-WORDING-001,Guarantee / SBLC,Risk referral,Non-standard clause or open-ended liability requires legal and credit approval.,Trade Legal
+BG-DEMAND-STATEMENT-001,Guarantee / SBLC,Hard gate,Demand must contain each statement/document explicitly required by the guarantee.,Trade Legal
+COL-RELEASE-001,Documentary Collection,Hard gate,Release documents only after instruction-defined payment or acceptance event.,Collections Operations
+IMP-EVIDENCE-001,Import LC / A1,Monitoring,Track import evidence/IDPMS status according to approved bank workflow.,Import Monitoring
+EXP-OVERDUE-001,Export LC,Monitoring,Create follow-up task for overdue export bill or unresolved realization evidence.,Export Monitoring

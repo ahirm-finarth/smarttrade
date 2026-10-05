@@ -1,0 +1,7 @@
+finding_id,case_id,severity,rule_id,category,field,expected_value,observed_value,evidence,route_to,status
+DISC-0001,ST-IMP-2026-0002,HIGH,LC-AMOUNT-001,LC term mismatch,Invoice amount,"USD 120,000.00","USD 126,000.00","Commercial invoice, page 1, total amount; LC advice, page 1, credit amount",Trade Compliance,OPEN
+DISC-0002,ST-IMP-2026-0002,HIGH,LC-QTY-001,Cross-document mismatch,Quantity,100 MT,105 MT,"LC advice, page 1; packing list, page 1",Trade Compliance,OPEN
+DISC-0003,ST-IMP-2026-0002,MEDIUM,DOC-INV-REF-001,Duplicate-invoice candidate,Invoice fingerprint,Unique invoice/financing record,Matches historical synthetic invoice fingerprint HIST-INV-OB-2025-889,"Invoice header, page 1; prior transaction reference",Trade Risk,OPEN
+DISC-0004,ST-EXP-2026-0003,HIGH,LC-SHIP-DATE-001,Late shipment,On-board date,On or before 2026-03-15,2026-03-18,"Export LC, page 1; bill of lading, page 1",Trade Operations,OPEN
+DISC-0005,ST-EXP-2026-0003,MEDIUM,LC-PO-REF-001,Reference mismatch,Purchase order,PO-45078,PO-45087,"Export LC, page 1; commercial invoice, page 1",Trade Operations,OPEN
+DISC-0006,ST-BG-2026-0005,HIGH,BG-DEMAND-STATEMENT-001,Non-complying demand,Required breach statement,Signed statement of breach required,No breach statement in submitted demand letter,"Guarantee summary, page 1; demand letter, page 1",Trade Legal,OPEN

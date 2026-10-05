@@ -1,0 +1,8 @@
+case_id,event_time,actor_role,actor_id,action,outcome
+ST-IMP-2026-0001,2026-02-18T09:14:00+05:30,Trade Maker,demo-maker-01,Verified extraction and documentary checks,APPROVED
+ST-IMP-2026-0001,2026-02-18T09:27:00+05:30,Trade Checker,demo-checker-01,Approved payment readiness,APPROVED
+ST-IMP-2026-0002,2026-02-21T10:02:00+05:30,Trade Maker,demo-maker-02,Raised document and risk exceptions,REFERRED
+ST-IMP-2026-0002,2026-02-21T10:09:00+05:30,Trade Compliance,demo-compliance-01,Opened enhanced review work item,PENDING
+ST-EXP-2026-0003,2026-03-19T12:30:00+05:30,Export Maker,demo-export-01,Logged LC presentation discrepancies,REFERRED
+ST-COL-2026-0004,2026-04-03T15:05:00+05:30,Collections Maker,demo-collection-01,Recorded drawee acceptance,APPROVED
+ST-BG-2026-0005,2026-06-20T11:14:00+05:30,Guarantee Maker,demo-guarantee-01,Logged demand and sent to legal review,REFERRED

@@ -1,0 +1,19 @@
+case_id,document_id,document_type,reference,expected,received,file_name,extraction_confidence
+ST-IMP-2026-0001,DOC-0001,LC advice,LC-IM-260101,Y,Y,LC_Advice_ST-IMP-2026-0001.pdf,0.99
+ST-IMP-2026-0001,DOC-0002,Commercial invoice,INV-NT-260101,Y,Y,Commercial_Invoice_INV-NT-260101.pdf,0.98
+ST-IMP-2026-0001,DOC-0003,Packing list,PL-NT-260101,Y,Y,Packing_List_PL-NT-260101.pdf,0.98
+ST-IMP-2026-0001,DOC-0004,Bill of lading,BL-NT-260101,Y,Y,Bill_of_Lading_BL-NT-260101.pdf,0.97
+ST-IMP-2026-0002,DOC-0011,LC advice,LC-IM-260204,Y,Y,LC_Advice_ST-IMP-2026-0002.pdf,0.99
+ST-IMP-2026-0002,DOC-0012,Commercial invoice,INV-OB-260204,Y,Y,Commercial_Invoice_INV-OB-260204.pdf,0.98
+ST-IMP-2026-0002,DOC-0013,Packing list,PL-OB-260204,Y,Y,Packing_List_PL-OB-260204.pdf,0.96
+ST-IMP-2026-0002,DOC-0014,Bill of lading,BL-OB-260204,Y,Y,Bill_of_Lading_BL-OB-260204.pdf,0.97
+ST-EXP-2026-0003,DOC-0021,Export LC,LC-EX-260307,Y,Y,Export_LC_ST-EXP-2026-0003.pdf,0.99
+ST-EXP-2026-0003,DOC-0022,Commercial invoice,INV-MT-260318,Y,Y,Commercial_Invoice_INV-MT-260318.pdf,0.99
+ST-EXP-2026-0003,DOC-0023,Bill of lading,BL-MT-260318,Y,Y,Bill_of_Lading_BL-MT-260318.pdf,0.97
+ST-EXP-2026-0003,DOC-0024,Certificate of origin,COO-MT-260318,Y,Y,Certificate_of_Origin_COO-MT-260318.pdf,0.97
+ST-COL-2026-0004,DOC-0031,Collection instruction,COL-CE-260401,Y,Y,Collection_Instruction_ST-COL-2026-0004.pdf,0.99
+ST-COL-2026-0004,DOC-0032,Commercial invoice,INV-CE-260401,Y,Y,Commercial_Invoice_INV-CE-260401.pdf,0.98
+ST-COL-2026-0004,DOC-0033,Bill of exchange,BOE-CE-260401,Y,Y,Bill_of_Exchange_BOE-CE-260401.pdf,0.97
+ST-BG-2026-0005,DOC-0041,Guarantee summary,PG-260501,Y,Y,Guarantee_Summary_ST-BG-2026-0005.pdf,0.99
+ST-BG-2026-0005,DOC-0042,Demand letter,DM-260620,Y,Y,Demand_Letter_DM-260620.pdf,0.98
+ST-BG-2026-0005,DOC-0043,Underlying contract extract,CON-HI-260115,Y,Y,Contract_Extract_CON-HI-260115.pdf,0.96

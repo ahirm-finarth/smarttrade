@@ -1,0 +1,4 @@
+reference_id,reference_type,name,country,status,note
+DEMO-SCR-001,Fictional adverse route,Port Azure,ZZ,REVIEW,Synthetic demo-only enhanced-due-diligence route
+DEMO-SCR-002,Fictional vessel alert,MV Meridian Halo,ZZ,REVIEW,Synthetic demo-only vessel risk signal
+DEMO-SCR-003,Fictional counterparty,Vesper Commodities FZE,ZZ,REVIEW,Synthetic demo-only counterparty review signal

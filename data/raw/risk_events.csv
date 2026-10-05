@@ -1,0 +1,7 @@
+risk_id,case_id,risk_type,subject,provider,result,severity,reason
+RISK-0001,ST-IMP-2026-0001,Sanctions screening,All parties and vessel,DemoScreen,CLEAR,INFO,No synthetic list match
+RISK-0002,ST-IMP-2026-0002,Country/port policy,Port Azure,DemoTradePolicy,REFER,HIGH,Configured enhanced due diligence route
+RISK-0003,ST-IMP-2026-0002,Vessel screening,MV Meridian Halo,DemoVessel,REFER,MEDIUM,Synthetic adverse-route alert requires analyst validation
+RISK-0004,ST-IMP-2026-0002,Fair value,Bio-polymer packaging resin,DemoPriceIndex,REFER,MEDIUM,Invoice unit price exceeds demo tolerance after normalisation
+RISK-0005,ST-EXP-2026-0003,Export realisation watch,Export bill ST-EXP-2026-0003,Smart Trade Watchlist,MONITOR,LOW,Case remains open pending discrepancy/waiver decision
+RISK-0006,ST-BG-2026-0005,Guarantee demand compliance,Demand DM-260620,Smart Trade Rules,REFER,HIGH,Required breach statement absent

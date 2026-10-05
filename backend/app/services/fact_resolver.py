@@ -28,6 +28,10 @@ def load_case_evidence(session: Session, case: TradeCase) -> dict:
         )
         .execution_options(populate_existing=True)
     ).all()
+    return build_case_evidence(case, documents)
+
+
+def build_case_evidence(case: TradeCase, documents: list[CaseDocument]) -> dict:
     result = {
         "case_id": case.case_id,
         "case_pk": case.id,

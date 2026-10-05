@@ -175,3 +175,11 @@ def test_required_rationale_and_client_role_claim_are_schema_rejected():
             expected_revision=1,
             actor_role="TRADE_CHECKER",
         )
+
+
+def test_task_claim_cannot_be_taken_by_another_actor_with_same_role(database):
+    with Session(database) as s:
+        run = action(s, clean_decision(s), "MAKER_REVIEW", "maker.demo", Action.START)
+        with pytest.raises(WorkflowConflict):
+            action(s, run, "MAKER_REVIEW", "dual.demo", Action.SUBMIT)
+        assert get_decision(s, run.id).workflow.final_outcome is None

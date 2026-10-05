@@ -110,6 +110,7 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
   }, [running, busy, refresh, versionId]);
   async function process() {
     if (!version) return;
+    ++requestSequence.current;
     setBusy(true);
     setOperation("process");
     setError("");
@@ -125,6 +126,7 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
       if (result.status !== "COMPLETED")
         setError(result.error_message || "Extraction needs review.");
     } catch (error) {
+      ++requestSequence.current;
       setError(
         error instanceof Error
           ? error.message
@@ -144,6 +146,7 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
       setError("Choose a PDF of 20 MB or smaller.");
       return;
     }
+    ++requestSequence.current;
     setBusy(true);
     setOperation("upload");
     setError("");
@@ -157,6 +160,7 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
       );
       form.reset();
     } catch (error) {
+      ++requestSequence.current;
       setError(
         error instanceof Error ? error.message : "Upload failed. Try again.",
       );
@@ -195,7 +199,10 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
         <div className="document-heading-actions">
           <button
             className="button button-secondary"
-            onClick={() => refresh(versionId, run?.id)}
+            onClick={() => {
+              setImageError(false);
+              void refresh(versionId, run?.id);
+            }}
             disabled={busy}
           >
             <RefreshCw size={14} />

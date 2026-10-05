@@ -71,6 +71,15 @@ test("document intake, duplicate upload, source page, and fact provenance", asyn
     path: path.join(captureDir, `${info.project.name}-documents.png`),
     fullPage: true,
   });
+  const previewRoute = "**/api/v1/documents/*/pages/*/image*";
+  let failPreview = true;
+  await page.route(previewRoute, (route) => {
+    if (failPreview) {
+      failPreview = false;
+      return route.abort("failed");
+    }
+    return route.continue();
+  });
   await page.goto(`/documents/${detail.document.id}`);
   await expect(
     page.getByRole("heading", {
@@ -78,6 +87,10 @@ test("document intake, duplicate upload, source page, and fact provenance", asyn
       exact: true,
     }),
   ).toBeVisible();
+  await expect(
+    page.getByText("Page preview unavailable", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Refresh", exact: true }).click();
   const image = page.getByRole("img", { name: /source page 1$/ });
   await expect(image).toBeVisible();
   await expect
@@ -85,6 +98,7 @@ test("document intake, duplicate upload, source page, and fact provenance", asyn
       image.evaluate((element) => (element as HTMLImageElement).naturalWidth),
     )
     .toBeGreaterThan(0);
+  await page.unroute(previewRoute);
   const source = await request.get(
     `${apiBase}/api/v1/documents/${detail.document.id}/source`,
   );

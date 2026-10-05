@@ -57,3 +57,14 @@ format:
 
 secrets:
 	python3 scripts/check_secrets.py
+
+.PHONY: register-demo-documents process-demo-documents evaluate-demo-extraction
+
+register-demo-documents:
+	$(PY) -m app.scripts.register_demo_documents
+
+process-demo-documents:
+	$(PY) -m app.scripts.process_demo_documents
+
+evaluate-demo-extraction:
+	$(PY) -m app.scripts.evaluate_demo_extraction --output reports/local/phase2-evaluation.json

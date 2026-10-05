@@ -247,3 +247,48 @@ def test_bad_source_quotes_get_one_bounded_repair_attempt(context):
         assert run.metadata_json["extraction_attempts"] == 2
         assert all(f.evidence_status == "SUPPORTED" for f in run.facts)
         assert len(run.facts) == 2
+
+
+def test_retry_subset_preserves_first_attempt_supported_facts(context):
+    engine, settings = context
+
+    class SubsetLLM(MockLLM):
+        attempts = 0
+
+        def structured(self, messages, schema, max_tokens):
+            result = super().structured(messages, schema, max_tokens)
+            if schema.__name__ != "Classification":
+                self.attempts += 1
+                if self.attempts == 2:
+                    result.fields.invoice_number = None
+            return result
+
+    with Session(engine) as session:
+        version, _ = register_document(session, settings, "TEST-1", PDF.read_bytes(), PDF.name)
+        run = process_document(session, settings, version.document_pk, client_factory=SubsetLLM)
+        assert run.status == "COMPLETED"
+        assert {f.field_name for f in run.facts} == {"invoice_number", "total_amount"}
+
+
+def test_conflicting_source_supported_retries_require_review(context):
+    engine, settings = context
+
+    class ConflictingLLM(MockLLM):
+        attempts = 0
+
+        def structured(self, messages, schema, max_tokens):
+            result = super().structured(messages, schema, max_tokens)
+            if schema.__name__ != "Classification":
+                self.attempts += 1
+                if self.attempts == 2:
+                    result.fields.total_amount.raw_value = "USD 1,700.00"
+                    result.fields.total_amount.source_text = "Unit price\nUSD 1,700.00"
+            return result
+
+    with Session(engine) as session:
+        version, _ = register_document(session, settings, "TEST-1", PDF.read_bytes(), PDF.name)
+        run = process_document(
+            session, settings, version.document_pk, client_factory=ConflictingLLM
+        )
+        assert run.status == "NEEDS_REVIEW"
+        assert run.metadata_json["model_attempt_disagreements"] == ["total_amount"]

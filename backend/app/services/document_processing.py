@@ -137,16 +137,37 @@ def process_document(
             return run
         _stage(session, version, run, "EXTRACTING")
         feedback = None
+        accumulated = {}
+        all_reconciliations = {}
+        disagreements = []
         for _attempt in range(2):
             extracted = extract_document(client, parsed, classification.document_type, feedback)
             facts = build_raw_facts(run, extracted, parsed)
             reconciliations = normalize_and_validate(facts, classification.document_type, parsed)
+            all_reconciliations.update(reconciliations)
+            for fact in facts:
+                previous = accumulated.get(fact.field_name)
+                if previous and previous.evidence_status == "SUPPORTED":
+                    if fact.evidence_status != "SUPPORTED":
+                        continue
+                    if previous.normalized_json != fact.normalized_json:
+                        disagreements.append(fact.field_name)
+                        fact.evidence_status = "NEEDS_REVIEW"
+                        fact.review_reason = (
+                            "Source-backed model attempts disagree on the field value"
+                        )
+                accumulated[fact.field_name] = fact
+            facts = list(accumulated.values())
             feedback = [
                 f"{f.field_name}: {f.review_reason}; quote label and exact value together"
                 for f in facts
                 if f.evidence_status == "NEEDS_REVIEW"
             ]
-            omissions = printed_field_omissions(extracted, parsed)
+            omissions = [
+                field
+                for field in printed_field_omissions(extracted, parsed)
+                if field not in accumulated
+            ]
             feedback.extend(
                 f"{field}: a unique field label is printed in the supplied pages; "
                 "extract its actual value and quotation, or retain null if ambiguous"
@@ -157,8 +178,9 @@ def process_document(
         run.metadata_json = {
             **run.metadata_json,
             "extraction_attempts": _attempt + 1,
-            "evidence_reconciliation": reconciliations,
+            "evidence_reconciliation": all_reconciliations,
             "printed_field_omissions": omissions,
+            "model_attempt_disagreements": disagreements,
         }
         session.add_all(facts)
         session.flush()

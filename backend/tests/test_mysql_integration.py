@@ -107,3 +107,42 @@ def test_mysql_api_seeded_workflows():
         expected = Counter(row["expected_decision"] for row in source["trade_cases"])
         for outcome, count in expected.items():
             assert summary["expected_outcomes"][outcome] >= count
+
+
+def test_mysql_examination_schema_and_persisted_evidence_routes():
+    from app.models.examination import ExaminationRun
+    from app.rules import load_rules
+
+    engine = get_engine()
+    inspector = inspect(engine)
+    for name in (
+        "smart_trade_examination_runs",
+        "smart_trade_rule_executions",
+        "smart_trade_fact_relations",
+        "smart_trade_detected_discrepancies",
+    ):
+        assert name in inspector.get_table_names()
+        assert inspector.get_foreign_keys(name)
+        assert inspector.get_indexes(name)
+    with Session(engine) as session, TestClient(app) as client:
+        cases = session.scalars(select(TradeCase).where(TradeCase.dataset_key == DATASET_KEY)).all()
+        for case in cases:
+            run = session.scalar(
+                select(ExaminationRun)
+                .where(ExaminationRun.case_pk == case.id)
+                .order_by(ExaminationRun.run_number.desc())
+                .limit(1)
+            )
+            assert run is not None
+            response = client.get(f"/api/v1/examinations/{run.id}")
+            assert response.status_code == 200
+            detail = response.json()
+            assert len(detail["executions"]) == len(load_rules(case.product_playbook))
+            for finding in detail["findings"]:
+                for side in ("expected_json", "observed_json"):
+                    evidence = finding[side]
+                    assert evidence["fact_id"] and evidence["source_verified"]
+                    assert evidence["source_text"] and evidence["page_number"] >= 1
+            for relation in detail["relations"]:
+                assert relation["expected"]["fact_id"] == relation["source_fact_pk"]
+                assert relation["observed"]["fact_id"] == relation["target_fact_pk"]

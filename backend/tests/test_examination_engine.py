@@ -263,3 +263,81 @@ def test_required_statement_is_not_inferred_from_missing_extraction(database):
         second = run_examination(s, Settings(_env_file=None), case.case_id)
         assert [f.finding_type for f in second.findings] == ["REQUIRED_BREACH_STATEMENT_MISSING"]
         assert second.findings[0].observed_json["field_name"] == "notice"
+
+
+def test_active_worker_conflict_and_expired_worker_preserve_history(database):
+    from datetime import timedelta
+
+    from app.models.domain import now
+    from app.services.documents import DocumentConflict
+
+    with Session(database) as s:
+        case = import_case(s)
+        first = run_examination(s, Settings(_env_file=None), case.case_id)
+        first.status = "RUNNING"  # Simulate a worker that committed its lease then stopped.
+        s.commit()
+        with pytest.raises(DocumentConflict):
+            run_examination(s, Settings(_env_file=None), case.case_id)
+        first.started_at = now() - timedelta(minutes=6)
+        s.commit()
+        second = run_examination(s, Settings(_env_file=None), case.case_id)
+        assert second.id != first.id and second.status == "CLEAN"
+        assert get_examination(s, first.id).status == "FAILED"
+        assert "expired" in first.error_message
+
+
+def test_rule_version_changes_leave_old_execution_snapshot_unchanged(database, monkeypatch):
+    with Session(database) as s:
+        case = import_case(s)
+        settings = Settings(_env_file=None)
+        first = run_examination(s, settings, case.case_id)
+        original = copy.deepcopy(first.executions[0].rule_snapshot_json)
+        rules = tuple(r.model_copy(update={"version": 2}) for r in load_rules(IMPORT))
+        monkeypatch.setattr("app.services.examination_engine.load_rules", lambda _: rules)
+        assert not examination_is_current(s, first, settings)
+        second = run_examination(s, settings, case.case_id)
+        assert all(e.rule_version == 2 for e in second.executions)
+        assert get_examination(s, first.id).executions[0].rule_snapshot_json == original
+        assert first.executions[0].rule_version == 1
+
+
+def test_failed_latest_extraction_cannot_fall_back_to_older_successful_facts(database):
+    with Session(database) as s:
+        case = import_case(s)
+        settings = Settings(_env_file=None)
+        first = run_examination(s, settings, case.case_id)
+        invoice = s.scalar(
+            select(CaseDocument).where(CaseDocument.file_name == "COMMERCIAL_INVOICE.pdf")
+        )
+        old = copy.deepcopy(first.input_snapshot_json)
+        s.add(
+            DocumentProcessingRun(
+                document_version_pk=invoice.versions[0].id,
+                run_number=2,
+                status="FAILED",
+                document_type="COMMERCIAL_INVOICE",
+                classification_confidence=Decimal("0.99"),
+                error_message="Test failure",
+            )
+        )
+        s.commit()
+        second = run_examination(s, settings, case.case_id)
+        assert second.status == "INCOMPLETE_EXAMINATION" and not second.findings
+        assert second.summary_json["results_by_status"]["NEEDS_REVIEW"] > 0
+        assert first.input_snapshot_json == old and first.status == "CLEAN"
+
+
+def test_runtime_does_not_read_reference_files(database, monkeypatch):
+    from pathlib import Path
+
+    with Session(database) as s:
+        case = import_case(s, amount="USD 106.00")
+        settings = Settings(_env_file=None)
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError("Examination must not read labelled files")
+
+        monkeypatch.setattr(Path, "open", forbidden)
+        run = run_examination(s, settings, case.case_id)
+        assert run.status == "DISCREPANCIES_FOUND"
+        assert any(f.finding_type == "AMOUNT_MISMATCH" for f in run.findings)

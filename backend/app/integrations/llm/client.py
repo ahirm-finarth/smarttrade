@@ -1,8 +1,13 @@
+import json
+from typing import TypeVar
 from urllib.parse import urlsplit
 
 import httpx
+from pydantic import BaseModel, ValidationError
 
 from app.core.config import Settings
+
+ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
 
 
 class LLMUnavailable(RuntimeError):
@@ -10,7 +15,7 @@ class LLMUnavailable(RuntimeError):
 
 
 class LLMClient:
-    """Opt-in OpenAI-compatible client; never invoked by Phase 1 API routes."""
+    """Shared OpenAI-compatible client with validated structured document responses."""
 
     def __init__(self, settings: Settings, transport: httpx.BaseTransport | None = None):
         if not settings.llm_configured:
@@ -29,7 +34,7 @@ class LLMClient:
         self.model = settings.llm_model
         self._http = httpx.Client(
             base_url=url + "/",
-            timeout=15,
+            timeout=settings.llm_timeout_seconds,
             transport=transport,
             headers={"Authorization": f"Bearer {settings.llm_api_key.get_secret_value()}"},
         )
@@ -62,6 +67,36 @@ class LLMClient:
             return payload["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError):
             raise LLMUnavailable("Unexpected OpenAI-compatible response shape") from None
+
+    def structured(
+        self, messages: list[dict[str, str]], schema: type[ResponseModel], max_tokens: int = 4096
+    ) -> ResponseModel:
+        payload = self._request(
+            "POST",
+            "chat/completions",
+            json={
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": 0,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": schema.__name__,
+                        "schema": schema.model_json_schema(),
+                    },
+                },
+            },
+        )
+        try:
+            choice = payload["choices"][0]
+            if choice.get("finish_reason") == "length":
+                raise ValueError("Truncated output")
+            content = choice["message"]["content"]
+            # Explicit parsing plus strict validation: no fenced JSON or silent coercion.
+            return schema.model_validate(json.loads(content), strict=True)
+        except (KeyError, IndexError, TypeError, ValueError, ValidationError):
+            raise LLMUnavailable("Model output failed structured schema validation") from None
 
     def close(self):
         self._http.close()

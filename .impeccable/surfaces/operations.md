@@ -12,7 +12,7 @@ Trade register and inspection ledger: white records on #f6f7f8 canvas, deep teal
 
 ## STORY
 
-Dashboard summary and product mix lead to a searchable register; opening a case leads to source metadata and related inventories. Every expected outcome and historical control record stays visibly synthetic. No processing, screening, decision or approval action is offered.
+Dashboard summary and product mix lead to a searchable register; opening a case leads to source metadata and related inventories. Every expected outcome and historical control record stays visibly synthetic. The Documents tab adds explicit upload/process/reprocess actions and links to individual-document provenance. Screening, decision and approval actions remain unavailable.
 
 ## FIRST VIEWPORT
 

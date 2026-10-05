@@ -1,91 +1,57 @@
 # FinArth Smart Trade
 
-Phase 1 provides a persisted synthetic trade-case register, operations dashboard, and read-only case workspace. FastAPI queries the supplied MySQL database; Next.js renders those API responses. The frontend contains no hardcoded demo cases.
+Phase 2 extends the Phase 1 case register with **document intake, PDF intelligence, and source provenance**. FastAPI persists originals, pages, processing runs, and extracted facts in the existing MySQL-backed architecture. Next.js displays the source PDF alongside individual extracted fields. Processing uses actual PDF content; CSV/XLSX/JSON labels are evaluation inputs only.
 
-**Synthetic Demo Data:** expected PASS / REFER / BLOCK outcomes, document confidence, findings, screening signals, and approval events are supplied reference records. Phase 1 does not derive decisions, extract documents, run compliance checks, execute rules, or perform approval actions.
+**Synthetic Demo Data:** all supplied fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected PASS / REFER / BLOCK outcomes, findings, screening signals, and approval events remain supplied references. The application does not compute trade decisions or cross-document checks.
 
-Work is committed to [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1), following the requested Phase 1 branch. The GitHub repository was empty when initialized.
+Phase 2 is on [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2). The original foundation remains on [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1).
 
-## Prerequisites
+## Native setup
 
-- Python 3.12 or newer and [uv](https://docs.astral.sh/uv/).
-- Node.js 20.9 or newer and npm; verified locally with Node 22.
-- Network access to the supplied MySQL 8-compatible instance and permission to create Smart Trade-owned tables.
-- Credentials provided through process environment variables or a local, ignored `.env` at the repository root.
-
-## Fresh clone and setup
+Use Python 3.12+, uv, Node.js 20.9+ (verified with Node 22), npm, and the existing external MySQL 8-compatible database. No Docker or additional database service is used.
 
 ```sh
-git clone --branch phase-1 https://github.com/ahirm-finarth/smarttrade.git
+git clone --branch phase-2 https://github.com/ahirm-finarth/smarttrade.git
 cd smarttrade
 make setup
-```
-
-`make setup` installs Python dependencies using `backend/uv.lock` into `backend/.venv` and Node dependencies using `frontend/package-lock.json`. Python setup may also be run with `make setup-backend`; Node setup with `make setup-frontend`.
-
-If your environment already provides credentials, use them directly. Otherwise copy the placeholder file and populate it privately:
-
-```sh
+# Only if no credential file already exists:
 cp .env.example .env
-```
-
-Do not overwrite an existing credential file. Never commit real credentials.
-
-## Runtime configuration
-
-Backend settings read the root `.env` automatically; process environment variables override matching file values. Choose **one** database configuration family and remove unused placeholder keys:
-
-| Configuration | Variables |
-| --- | --- |
-| Preferred MySQL URL | `DATABASE_URL` pointing to MySQL |
-| MySQL fields | `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
-| Supplied DB aliases | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` |
-
-A MySQL `DATABASE_URL` takes precedence. Otherwise the backend constructs the SQLAlchemy URL internally using PyMySQL and `utf8mb4`. The default port is 3306. Passwords are Pydantic `SecretStr` values; URLs and SQL parameter values are never logged by the application.
-
-`LLM_API_URL`, `LLM_MODEL`, and `LLM_API_KEY` are backend-only settings. Configuration is optional for Phase 1; application startup and case routes do not call the LLM. The supplied `/v1` endpoint supports the optional OpenAI-compatible client. For another endpoint, explicitly set `LLM_PROTOCOL=openai` only after verifying its protocol. Unknown protocols are refused.
-
-The frontend defaults to `http://localhost:8000`. To override, put **only** `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local` or export it before starting/building Next.js. Next.js public values are fixed at build time. Do not copy backend credentials into frontend configuration. `CORS_ORIGINS` is a JSON array and defaults to `http://localhost:3000`.
-
-`GH_TOKEN` was used securely for GitHub authentication during setup; it is not required by either application. Git remotes contain no token.
-
-## MySQL, migrations, and demo import
-
-Inspect connectivity and existing table ownership first:
-
-```sh
+# Populate credentials privately, then:
 make check-db
 make migrate
 make seed
+make register-demo-documents
 ```
 
-Migrations use `smart_trade_alembic_version`, manage only Smart Trade-owned tables, and exclude unrelated tables from autogeneration. The initial migration is additive. Never reset the supplied database. No Docker or additional database service is required.
+`make setup` installs locked Python dependencies into `backend/.venv` and locked Node dependencies into `frontend/node_modules`. Never overwrite an existing `.env` or reset the supplied database. Migrations use `smart_trade_alembic_version`, exclude unrelated tables, and add only Smart Trade-owned schema.
 
-The default source is `data/raw/`, which contains nine supplied CSV datasets and their matching workbook. To explicitly import the workbook:
+Registration copies and fingerprints the 18 committed PDFs, attaches them to the existing inventory, and creates immutable source versions. It is idempotent and **does not invoke the LLM**. Repeating the Phase 1 seed preserves registered sources. CSVs and the workbook remain deduplicated in `data/raw/`; source PDFs, case payloads, and the original manifest are in `data/demo/`. See [fixture notes](data/demo/README.md).
 
-```sh
-make seed SOURCE=data/raw/Smart_Trade_Demo_Data.xlsx
-```
+## Configuration
 
-The import is atomic and idempotent. It validates schema, identifiers, DECIMAL precision and timezone-bearing dates; rejects orphan records; protects non-demo identifier collisions; and reconciles only importer-owned related rows. Missing datasets and unrelated records are preserved. Omitted cases are preserved rather than automatically deleted. See [data/README.md](data/README.md) for source mapping and absent fields.
+Backend settings read the ignored root `.env`; matching environment variables take precedence. Choose one database configuration family and remove unused placeholder keys.
 
-| Dataset / MySQL table | Imported records |
-| --- | ---: |
-| `smart_trade_cases` | 5 |
-| `smart_trade_case_parties` | 12 |
-| `smart_trade_case_documents` | 18 |
-| `smart_trade_trade_lines` | 9 |
-| `smart_trade_discrepancies` | 6 |
-| `smart_trade_risk_events` | 6 |
-| `smart_trade_approval_events` | 7 |
-| `smart_trade_demo_risk_rules` | 14 |
-| `smart_trade_demo_screening_references` | 3 |
+| Purpose | Settings |
+| --- | --- |
+| Preferred MySQL URL | `DATABASE_URL` (MySQL only) |
+| MySQL fields | `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
+| Existing aliases | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` |
+| Document model | `LLM_API_URL`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_PROTOCOL` |
+| Local originals | `DOCUMENT_STORAGE_ROOT` (default `./storage`, relative to the repository root) |
+| Intake limits | `DOCUMENT_MAX_BYTES=20971520`, `DOCUMENT_MAX_PAGES=100` |
+| Model input bound | `DOCUMENT_MAX_TEXT_CHARS=60000` |
+| Per-call timeout | `LLM_TIMEOUT_SECONDS=180` |
+| Browser access | `CORS_ORIGINS` JSON array; both localhost and 127.0.0.1 on port 3000 by default |
 
-The last two tables are passive synthetic reference inventory; their contents are never executed or used for live screening. `smart_trade_alembic_version` stores the schema revision.
+A MySQL `DATABASE_URL` takes precedence; otherwise settings construct a PyMySQL URL with `utf8mb4`. Passwords use `SecretStr`, and SQL parameter logging is suppressed. A supplied `/v1` LLM base URL is treated as OpenAI-compatible; for another verified compatible endpoint set `LLM_PROTOCOL=openai`. Unknown protocols are refused. Structured calls request JSON Schema and strictly validate returned JSON before persistence. Truncated responses get one bounded larger-budget retry. Startup, health, case queries, registration, and default backend tests do not invoke the model.
 
-## Start the applications
+The supplied endpoint does not declare vision capability. Pages with insufficient native text become `NEEDS_REVIEW` with an `OCR_REQUIRED` reason; no OCR, vision request, or guessed text is produced. Oversized model input also requires review rather than silent truncation.
 
-Run these in separate terminals from the repository root:
+Only `NEXT_PUBLIC_API_BASE_URL` belongs in `frontend/.env.local` or the environment before building Next.js; it defaults to `http://localhost:8000` and is fixed at build time. Keep all backend credentials out of frontend configuration. The upload UI reflects the default 20 MB limit; when changing backend limits, update that user-facing limit as well. `GH_TOKEN` is only for Git authentication and is not an application setting. Remotes contain no token.
+
+## Run and use
+
+Run in separate terminals from the repository root:
 
 ```sh
 make backend
@@ -96,92 +62,131 @@ make frontend
 ```
 
 - Dashboard: http://localhost:3000/
-- Case workspace: `http://localhost:3000/cases/{case_id}`; click any case in the register.
-- Backend: http://localhost:8000
+- Case workspace: `/cases/{case_id}`; select **Documents**.
+- Document workspace: `/documents/{document_id}` (the internal numeric inventory ID).
+- Backend health: http://localhost:8000/health
 - API documentation: http://localhost:8000/docs
-- Required-database health: http://localhost:8000/health
 
-For the production frontend:
+Upload a valid PDF, then select **Process**. Open a document and select a field to inspect its normalized value, raw source value, source quotation, confidence, version, page, and run. The preview renders the real PDF page; **Open original PDF** serves the immutable original. A native-text transcript also highlights an exact raw-text match. No bounding boxes are inferred.
+
+Use **Reprocess** for a new extraction run on the same original, or **Source details and new version** to upload another immutable version. Earlier runs and versions remain selectable. Failed and review-required states are explicit. Progress is polled from committed stages, without fabricated percentages. The API processes synchronously in a native worker; refresh does not erase saved state. A crashed worker's active run expires after 30 minutes and is marked failed on the next explicit retry. This is not a distributed job queue.
+
+For production frontend validation:
 
 ```sh
 make build
-npm --prefix frontend run start
+npm --prefix frontend run start -- --hostname 127.0.0.1
 ```
 
-Health returns HTTP 503 when MySQL is unavailable and reports only application status, connectivity, and whether LLM settings are configured. LLM availability does not control readiness. API failures return sanitized messages. Case workspaces show document inventory metadata and read-only historical events; they include no document viewer or processing actions.
+Development and production builds explicitly use Next.js's supported Webpack builder. Turbopack's CSS worker attempted a denied local port binding in this execution environment; Webpack builds and serves the same application natively.
+
+## Document architecture
+
+```text
+Case → CaseDocument → DocumentVersion → immutable source PDF
+                         ├─ DocumentPage (native text, 1-based page)
+                         └─ DocumentProcessingRun (stages, model, prompt versions)
+                              └─ ExtractedFact (raw/normalized value, page, quote, confidence)
+```
+
+Four additive tables were introduced by Alembic revision `e52fad8ad293`, following `30af12917573`:
+
+- `smart_trade_document_versions`: inventory/case links, version, filename, relative storage key, size, MIME, SHA-256, status, page count, timestamps.
+- `smart_trade_document_pages`: immutable page text, length, native extraction method, review flag.
+- `smart_trade_document_processing_runs`: version/run sequence, persisted state, parser/model, classification, timestamps, safe failure message, prompt/stage metadata.
+- `smart_trade_extracted_facts`: run link, field, raw and normalized values, JSON value, page, quotation, confidence, evidence status, review reason.
+
+Fact ownership is derived through run → version → document → case, avoiding inconsistent duplicated ownership. Fact API responses also include those explicit identifiers. Money normalization uses `Decimal`; date, quantity/unit, and boolean normalization are deterministic. Unsupported or ambiguous values remain flagged.
+
+The shared LLM client, classifier, type-specific schemas, extraction prompt, normalization, evidence validation, storage, and processing service are separate from thin API handlers. Classification uses page-heading cues followed by a real model call. Extraction receives only page text and a document-specific schema. Absent fields remain null. See [supported schemas and validation](docs/PHASE2_VALIDATION.md).
+
+Evidence must match native page text. If the model quotes only a field label, a unique adjacent native value may supply the exact quotation; money/date/quantity representations must normalize identically. This never uses reference datasets. Ambiguous labels, unrelated values, invented quotations, and unequal amounts cannot pass. Model originals and the reconciliation method are retained in run metadata. One additional model extraction attempt may repair unsupported evidence; remaining unsupported facts stay `NEEDS_REVIEW`.
+
+Originals live under ignored `storage/cases/<internal-case-id>/documents/<internal-document-id>/versions/<version>/<uuid>/source.pdf`. Storage keys are generated internally; filenames are sanitized and never used as paths. Intake verifies MIME, signature, PDF validity, size/pages, and encryption, computes SHA-256, and rejects exact duplicates within a case. Originals use exclusive creation and read-only file permissions; integrity is checked before processing or serving. A malware-scanner extension point is documented before storage, without adding unsupported infrastructure.
 
 ## API
 
-| Method | Route | Response |
+Existing case/dashboard APIs remain compatible. Document APIs are additive:
+
+| Method | Route | Behavior |
 | --- | --- | --- |
-| GET | `/health` | Required MySQL connectivity, safe LLM configuration flag |
-| GET | `/api/v1/cases` | Paginated case summaries; `q`, `product`, `outcome`, `limit`, `offset` filters |
-| GET | `/api/v1/cases/{case_id}` | Case metadata plus all six related inventories |
-| GET | `/api/v1/dashboard/summary` | Database counts, expected outcomes, product distribution |
-| GET | `/api/v1/cases/{case_id}/parties` | Party inventory |
-| GET | `/api/v1/cases/{case_id}/documents` | Document inventory |
-| GET | `/api/v1/cases/{case_id}/trade-lines` | Trade line inventory |
-| GET | `/api/v1/cases/{case_id}/discrepancies` | Supplied finding inventory |
-| GET | `/api/v1/cases/{case_id}/risk-events` | Supplied risk signals |
-| GET | `/api/v1/cases/{case_id}/approvals` | Historical demo events |
+| GET | `/api/v1/cases/{case_id}/documents` | Inventory with detected type, version/pages, status, update time |
+| POST | `/api/v1/cases/{case_id}/documents` | Multipart `file`; optional `document_id` adds a version to an existing inventory entry |
+| GET | `/api/v1/documents/{document_id}` | Versions, selected pages/run/facts, history; optional `version_id` or `run_id` |
+| POST | `/api/v1/documents/{document_id}/process` | Process selected/latest version; reuse an already completed run |
+| POST | `/api/v1/documents/{document_id}/reprocess` | New run; preserve earlier facts and history |
+| GET | `/api/v1/documents/{document_id}/processing-runs` | All version/run history |
+| GET | `/api/v1/documents/{document_id}/facts` | Latest run facts; optional `run_id` selects history |
+| GET | `/api/v1/documents/{document_id}/source` | Original PDF; optional `version_id` |
+| GET | `/api/v1/documents/{document_id}/pages/{page_number}/image` | Size-bounded PNG preview of the actual source page; optional `version_id` |
 
-API unknown case IDs return 404. Next.js renders the matching not-found screen; streamed page responses can retain HTTP 200 after the loading shell has already been sent. Monetary API fields are decimal strings; the frontend formats them without floating-point conversion. Approval dates are normalized to UTC in MySQL and displayed in IST. Persistence timestamps describe database records, not invented trade events.
+Processing POSTs accept optional `version_id`. A completed processing HTTP request may return a persisted `FAILED` or `NEEDS_REVIEW` run; clients must inspect its state. Unknown case/document/version/run/page returns 404. Invalid intake returns 422; concurrent processing or conflicting ownership returns 409; database failures return sanitized 503 responses. A run ID from another document cannot select its facts. Storage paths and credentials are never API response fields.
 
-## Checks and diagnostics
+Existing routes also provide `/cases`, `/cases/{case_id}`, `/dashboard/summary`, and each case's parties, trade-lines, discrepancies, risk-events, and approvals under `/api/v1`. Health requires MySQL, reports only safe readiness/configuration flags, and does not depend on LLM availability. Decimal API values are strings; displayed persistence and event timestamps use IST.
+
+## Demo processing and evaluation
+
+These are separately invoked development commands:
 
 ```sh
-make test          # 16 isolated tests; 3 supplied-MySQL tests skipped by default
-make test-mysql    # All 19 tests; requires migrated/seeded supplied database
+make register-demo-documents      # No model calls
+make process-demo-documents       # Actual model calls, source PDFs only
+make evaluate-demo-extraction    # Labels used only here; ignored local JSON report
+# Explicitly create new runs, optionally for one case:
+backend/.venv/bin/python -m app.scripts.process_demo_documents --reprocess --case-id ST-BG-2026-0005
+```
+
+Evaluation covers document type/reference and unambiguous document-specific monetary, quantity/unit, and goods labels. It does not compare trade documents with each other or generate compliance findings. Missing outputs count as misses. Unsupported evidence is not counted as a supported extraction. Document dates and other unlabelled fields are reported as unscored; evaluation does not invent ground truth. [Phase 2 validation evidence](docs/PHASE2_VALIDATION.md) records actual live results and limitations.
+
+## Checks
+
+```sh
+make test          # Isolated tests; no live model calls; MySQL checks skipped
+make test-mysql    # Also validates external MySQL, migration, and Phase 1 seed regression
 make lint
 make typecheck
 make build
 make secrets
 python3 scripts/check_secrets.py --history --frontend-build
-make check-llm     # Optional model-list request; sends no trade data
+make check-llm     # Model-list health probe only
 ```
 
-For browser checks, keep the backend running. Playwright reuses a running frontend or starts the development frontend:
+For browser tests, register and explicitly process at least one demo PDF first, keep the backend running, and install Playwright Chromium once:
 
 ```sh
-cd frontend
-npx playwright install chromium
+cd frontend && npx playwright install chromium
 cd ..
 make test-e2e
 ```
 
-The browser suite compares dashboard values and case records with the running API on desktop and mobile, exercises filters, empty states, case navigation, all tabs, keyboard interaction, viewport containment, and unknown cases. Screenshots and traces are ignored. Backend isolated tests use temporary in-memory SQLite solely for test isolation; production and integration tests use the supplied MySQL. `create_all()` appears only in isolated tests; Alembic is the application migration strategy.
+Desktop/mobile tests cover Phase 1 dashboard/filter/tab/keyboard regressions plus duplicate upload, real PDF previews, field/source provenance, recoverable processing errors, and unknown documents. Default browser tests make no live model calls. Screenshots/traces are ignored. Backend isolation uses temporary SQLite only in tests; production uses MySQL and Alembic, never `create_all()`.
 
-The secret scan checks configured credential material, recognizable GitHub tokens, and tracked environment files; optional modes check historical blobs and compiled frontend artifacts. Non-credential LLM placeholder sentinels are excluded to avoid matching ordinary framework identifiers. It supplements inspection and never prints matching content or secret values.
+The secret scanner checks configured credential material, GitHub token patterns, and tracked environment files without printing matching content. Optional modes check historical blobs and compiled frontend artifacts. Runtime originals, reports, credentials, and dependency caches are ignored; reproducible synthetic PDFs are committed.
 
-## Architecture and repository layout
+## Repository layout
 
 ```text
-frontend/                 Next.js App Router, TypeScript, Tailwind
-  app/                    Dashboard, case route, loading/error/not-found states
-  components/             Shell, register, metrics, reusable tables, case tabs
-  lib/                    Central API client and exact decimal/date formatting
-  types/                  Typed API response contracts
-  tests/                  Desktop/mobile Playwright workflows
-backend/
-  app/api/v1/             Thin read-only FastAPI routes
-  app/core/               Secure environment settings
-  app/db/                 Engine, sessions, database readiness
-  app/models/             SQLAlchemy source-grounded domain and UTC handling
-  app/schemas/            Pydantic response schemas
-  app/repositories/       MySQL queries and eager-loaded case detail
-  app/services/           Case queries and transactional demo import
-  app/integrations/llm/   Optional reusable client, unused by trade workflows
-  app/scripts/            Safe database, seed, and model diagnostics
-  alembic/                Scoped schema migration
-  tests/                  API, configuration, seed, LLM and MySQL tests
-data/raw/                 Original supplied CSVs and XLSX
-scripts/                  Secret inspection
-docs/                     Phase 1 validation evidence
-Makefile                  Local development and checks
+frontend/app/                    Dashboard, case tabs, document workspace, error states
+frontend/components/             Existing ledger UI plus intake, status, document/fact panels
+frontend/lib/                    Central typed API client and exact value formatting
+frontend/tests/                  Desktop/mobile browser workflows
+backend/app/api/v1/              Thin case and document routes
+backend/app/models/               Case domain and version/page/run/fact persistence
+backend/app/schemas/              API contracts and type-specific structured output schemas
+backend/app/services/             Registration, parsing pipeline, classification/extraction, evidence
+backend/app/integrations/         Shared LLM client, native PDF parser, local storage abstraction
+backend/app/scripts/              Seed, register/process/evaluate demo, safe diagnostics
+backend/alembic/                  Scoped additive migrations
+backend/tests/                    Isolated and separately invoked MySQL regression tests
+data/raw/                         Original matching CSV/XLSX reference datasets
+data/demo/                        Original synthetic PDF packets, JSON payloads, manifest
+storage/                          Ignored runtime originals
+reports/local/                    Ignored evaluation output
+docs/                             Phase 1 and Phase 2 evidence
 ```
 
-Design conventions are recorded in [DESIGN.md](DESIGN.md) and `.impeccable/design.json`. [docs/PHASE1_VALIDATION.md](docs/PHASE1_VALIDATION.md) records the checks actually run. The [branch commit history](https://github.com/ahirm-finarth/smarttrade/commits/phase-1) contains individually pushed Conventional Commits.
+[DESIGN.md](DESIGN.md) and `.impeccable/design.json` preserve the established operations design system. Phase 1 verification remains in [docs/PHASE1_VALIDATION.md](docs/PHASE1_VALIDATION.md).
 
-## Deferred work
+## Deferred scope
 
-Phase 2 and later own document intelligence/OCR, extraction, evidence graphs, documentary examination, rule execution, screening integrations, calculated decisions, maker/checker actions, agents, Smart Insights, SWIFT and core-banking integration. Phase 1 ends at the persisted read-only product foundation.
+Phase 3 owns evidence graphs, cross-document checks, LC/invoice/BL comparisons, discrepancies, UCP/ISBP rules, duplicate-invoice business logic, sanctions/vessel/country/price checks, risk orchestration, computed PASS / REFER / BLOCK outcomes, maker/checker workflows, Smart Insights, SWIFT, and core trade posting. OCR/vision, cloud storage, distributed processing, richer multi-line schemas, and production access controls also require later infrastructure work. Phase 2 deliberately stops at individual-document intelligence and traceable source facts.

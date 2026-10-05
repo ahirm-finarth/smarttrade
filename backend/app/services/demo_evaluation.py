@@ -113,6 +113,7 @@ def evaluate_demo_extraction(session: Session, source: Path = ROOT / "data/raw")
         "scope": "Labelled development fixtures only; not trade compliance checks",
         "registered_pdfs": registered,
         "processed_pdfs": processed,
+        "successfully_processed_pdfs": statuses["COMPLETED"],
         "statuses": dict(statuses),
         "classification_types": dict(kinds),
         "metrics": metrics,

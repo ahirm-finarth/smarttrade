@@ -16,19 +16,19 @@ Trade operations users inspecting synthetic trade cases and their related record
 
 ## Product Purpose
 
-FinArth Smart Trade is an evidence-led, governed trade-finance decision layer. Phase 1 establishes the persisted case inventory, dashboard, and read-only case workspace. Success is a source-grounded dashboard and inspectable cases fetched through the backend from MySQL.
+FinArth Smart Trade is an evidence-led, governed trade-finance decision layer. Phase 1 establishes the persisted case inventory and dashboard. Phase 2 adds source PDF intake, per-document classification/extraction, deterministic normalization, and page-level provenance. Success is opening a case, processing its actual source PDF, and inspecting each extracted field beside its source page.
 
 ## Capabilities and Constraints
 
-Dashboard KPIs and product distribution; searchable case register; case overview, parties, document inventory, trade lines, discrepancies, risk events, and historical approval events. Every supplied record is synthetic demo data. PASS, REFER, and BLOCK are expected demo outcomes, never computed decisions. Absent source fields remain empty. No OCR, extraction, rule evaluation, sanctions integration, approval actions, or agent workflows in Phase 1. LLM configuration and client remain backend-only and opt-in.
+Dashboard KPIs and product distribution; searchable case register; case overview, parties, document inventory, trade lines, discrepancies, risk events, and historical approval events. Every supplied record is synthetic demo data. PASS, REFER, and BLOCK are expected demo outcomes, never computed decisions. Absent source fields remain empty. Phase 2 permits PDF upload, immutable versions, explicit processing/reprocessing, source page viewing, and extraction history. LLM calls receive source page text only; labels are evaluation-only. Insufficient native text requires review while endpoint vision support remains unverified. No OCR, rule evaluation, sanctions integration, approval actions, computed decisions, evidence graphs, or cross-document reasoning. LLM configuration remains backend-only.
 
 ## Brand Commitments
 
-FinArth; Smart Trade. Polished, precise enterprise interface. User delegated visual design judgment and chose building directly in code. No supplied logo or established visual system.
+FinArth; Smart Trade. Polished, precise enterprise interface. User delegated visual design judgment and chose building directly in code. No supplied logo. Phase 2 preserves the operations ledger design established in DESIGN.md during Phase 1.
 
 ## Evidence on Hand
 
-`data/raw/` includes the supplied matching XLSX and CSV datasets: 5 cases, 12 parties, 18 documents, 9 trade lines, 6 discrepancies, 6 risk events, 7 approval events, 14 passive rule references, 3 passive screening references. No invented business values or regulatory claims.
+`data/raw/` includes the supplied matching XLSX and CSV datasets: 5 cases, 12 parties, 18 documents, 9 trade lines, 6 discrepancies, 6 risk events, 7 approval events, 14 passive rule references, 3 passive screening references. The committed data/demo/ source pack adds 18 original watermarked PDFs and five labelled case payloads, without duplicating the workbook. No invented business values or regulatory claims.
 
 ## Product Principles
 

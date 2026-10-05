@@ -1,0 +1,182 @@
+{
+  "scope": "Labelled development fixtures only; not trade compliance checks",
+  "registered_pdfs": 18,
+  "processed_pdfs": 18,
+  "successfully_processed_pdfs": 18,
+  "statuses": {
+    "COMPLETED": 18
+  },
+  "classification_types": {
+    "LETTER_OF_CREDIT": 3,
+    "COMMERCIAL_INVOICE": 4,
+    "PACKING_LIST": 2,
+    "BILL_OF_LADING": 3,
+    "CERTIFICATE_OF_ORIGIN": 1,
+    "COLLECTION_INSTRUCTION": 1,
+    "BILL_OF_EXCHANGE": 1,
+    "BANK_GUARANTEE": 1,
+    "GUARANTEE_DEMAND": 1,
+    "CONTRACT_EXTRACT": 1
+  },
+  "metrics": {
+    "classification": {
+      "correct": 18,
+      "labelled": 18
+    },
+    "reference": {
+      "correct": 17,
+      "labelled": 18
+    },
+    "money": {
+      "correct": 8,
+      "labelled": 8
+    },
+    "quantity": {
+      "correct": 8,
+      "labelled": 8
+    },
+    "goods_description": {
+      "correct": 8,
+      "labelled": 8
+    }
+  },
+  "skipped": {
+    "dates": "No document-date ground truth in supplied reference datasets",
+    "other_fields": "No unambiguous document-specific labels; not scored",
+    "multi_line": "Scalar extraction only; multi-line items not scored"
+  },
+  "documents": [
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "filename": "LC_Advice_ST-IMP-2026-0001.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "filename": "Commercial_Invoice_INV-NT-260101.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "filename": "Packing_List_PL-NT-260101.pdf",
+      "classification": true,
+      "reference": false
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "filename": "Bill_of_Lading_BL-NT-260101.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "filename": "LC_Advice_ST-IMP-2026-0002.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "filename": "Commercial_Invoice_INV-OB-260204.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "filename": "Packing_List_PL-OB-260204.pdf",
+      "classification": true,
+      "reference": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "filename": "Bill_of_Lading_BL-OB-260204.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "filename": "Export_LC_ST-EXP-2026-0003.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "filename": "Commercial_Invoice_INV-MT-260318.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "filename": "Bill_of_Lading_BL-MT-260318.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "filename": "Certificate_of_Origin_COO-MT-260318.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "filename": "Collection_Instruction_ST-COL-2026-0004.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "filename": "Commercial_Invoice_INV-CE-260401.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true,
+      "quantity": true,
+      "goods_description": true
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "filename": "Bill_of_Exchange_BOE-CE-260401.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "filename": "Guarantee_Summary_ST-BG-2026-0005.pdf",
+      "classification": true,
+      "reference": true,
+      "money": true
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "filename": "Demand_Letter_DM-260620.pdf",
+      "classification": true,
+      "reference": true
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "filename": "Contract_Extract_CON-HI-260115.pdf",
+      "classification": true,
+      "reference": true
+    }
+  ]
+}

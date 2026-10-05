@@ -36,6 +36,7 @@ def test_demo_registration_is_idempotent_and_does_not_process(tmp_path):
         evaluation = evaluate_demo_extraction(session)
         assert evaluation["registered_pdfs"] == 18
         assert evaluation["processed_pdfs"] == 0
+        assert evaluation["successfully_processed_pdfs"] == 0
         assert evaluation["metrics"]["classification"] == {"correct": 0, "labelled": 18}
         assert evaluation["metrics"]["money"]["labelled"] == 8
         assert evaluation["metrics"]["quantity"]["labelled"] == 8

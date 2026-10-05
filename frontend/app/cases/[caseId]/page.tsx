@@ -67,14 +67,17 @@ export default async function CasePage({
         <div className="reference-note">
           <Info size={15} />
           <p>
-            Synthetic case. Findings, risk signals, and approval events are
-            supplied demo records.
+            Synthetic case. Expected outcomes, reference findings, risks and
+            approval events are supplied demo records. Documentary examinations
+            use extracted source facts.
           </p>
         </div>
       )}
       <CaseWorkspace
         tradeCase={tradeCase}
-        initialTab={tab === "documents" ? "documents" : "overview"}
+        initialTab={
+          tab === "documents" || tab === "examination" ? tab : "overview"
+        }
       />
     </div>
   );

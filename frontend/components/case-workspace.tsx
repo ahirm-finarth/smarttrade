@@ -9,6 +9,7 @@ import {
   History,
   Rows3,
 } from "lucide-react";
+import { ExaminationWorkspace } from "@/components/examination-workspace";
 import { DocumentInventory } from "@/components/document-inventory";
 import { DataTable, SectionHeading, supplied } from "@/components/ui";
 import { money, dateTime } from "@/lib/format";
@@ -18,9 +19,10 @@ const tabs = [
   { id: "overview", label: "Overview" },
   { id: "parties", label: "Parties" },
   { id: "documents", label: "Documents" },
+  { id: "examination", label: "Examination" },
   { id: "trade_lines", label: "Trade lines" },
-  { id: "discrepancies", label: "Discrepancies" },
-  { id: "risk_events", label: "Risk events" },
+  { id: "discrepancies", label: "Reference findings" },
+  { id: "risk_events", label: "Reference risks" },
   { id: "approvals", label: "Approvals" },
 ] as const;
 type Tab = (typeof tabs)[number]["id"];
@@ -30,7 +32,7 @@ export function CaseWorkspace({
   initialTab = "overview",
 }: {
   tradeCase: CaseDetail;
-  initialTab?: "overview" | "documents";
+  initialTab?: "overview" | "documents" | "examination";
 }) {
   const [active, setActive] = useState<Tab>(initialTab);
   const inventory = [
@@ -54,13 +56,13 @@ export function CaseWorkspace({
     },
     {
       id: "discrepancies",
-      label: "Discrepancies",
+      label: "Reference findings",
       count: data.discrepancies.length,
       icon: ListChecks,
     },
     {
       id: "risk_events",
-      label: "Risk events",
+      label: "Reference risks",
       count: data.risk_events.length,
       icon: ShieldAlert,
     },
@@ -101,7 +103,9 @@ export function CaseWorkspace({
             onKeyDown={(event) => keyboard(event, index)}
           >
             {tab.label}
-            {tab.id !== "overview" && <span>{data[tab.id].length}</span>}
+            {tab.id !== "overview" && tab.id !== "examination" && (
+              <span>{data[tab.id].length}</span>
+            )}
           </button>
         ))}
       </div>
@@ -206,6 +210,12 @@ export function CaseWorkspace({
               active={active === "documents"}
             />
           )}
+          {tab.id === "examination" && (
+            <ExaminationWorkspace
+              caseId={data.case_id}
+              active={active === "examination"}
+            />
+          )}
           {tab.id === "trade_lines" && (
             <>
               <SectionHeading
@@ -248,11 +258,11 @@ export function CaseWorkspace({
           {tab.id === "discrepancies" && (
             <>
               <SectionHeading
-                title="Discrepancies"
+                title="Reference findings"
                 count={data.discrepancies.length}
               >
-                Historical demo findings from the source. Smart Trade does not
-                perform documentary examination.
+                Supplied labelled references. Calculated documentary findings
+                appear in Examination.
               </SectionHeading>
               <DataTable
                 rows={data.discrepancies}
@@ -305,7 +315,7 @@ export function CaseWorkspace({
           {tab.id === "risk_events" && (
             <>
               <SectionHeading
-                title="Risk events"
+                title="Reference risks"
                 count={data.risk_events.length}
               >
                 Supplied synthetic signals. Provider names and results are demo

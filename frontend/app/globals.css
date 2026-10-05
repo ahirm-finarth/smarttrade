@@ -1569,3 +1569,255 @@ mark {
     text-align: right;
   }
 }
+
+.examination-heading,
+.examination-runbar,
+.rule-results-heading,
+.comparison-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.examination-heading .section-heading {
+  margin-bottom: 0;
+}
+.examination-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.examination-workspace label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.examination-workspace select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  max-width: 100%;
+}
+.examination-runbar {
+  margin: 24px 0 20px;
+  align-items: center;
+}
+.examination-runbar label {
+  max-width: 60%;
+}
+.examination-runbar > div {
+  text-align: right;
+}
+.examination-result {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.result-matched {
+  color: var(--pass);
+  background: var(--pass-bg);
+}
+.result-finding {
+  color: var(--block);
+  background: var(--block-bg);
+}
+.result-review {
+  color: var(--refer);
+  background: var(--refer-bg);
+}
+.examination-counts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 0 28px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  gap: 16px;
+}
+.examination-counts dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.examination-counts dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.examination-error,
+.examination-notice {
+  padding: 12px 16px;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.examination-error {
+  color: var(--block);
+  background: var(--block-bg);
+}
+.examination-notice {
+  color: var(--refer);
+  background: var(--refer-bg);
+}
+.examination-empty {
+  padding: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.examination-inspect,
+.source-evidence-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.examination-inspect:hover,
+.source-evidence-link:hover {
+  color: var(--accent-hover);
+}
+.comparison-evidence {
+  margin: 28px 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 24px;
+}
+.comparison-rule {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0;
+}
+.comparison-reason {
+  max-width: 70ch;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.evidence-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: 24px;
+  gap: 28px;
+}
+.evidence-side {
+  min-width: 0;
+}
+.evidence-side h3 {
+  font-size: 14px;
+}
+.evidence-role {
+  color: var(--muted);
+  margin: 8px 0 16px;
+  font-size: 12px;
+}
+.evidence-values {
+  margin: 0;
+  font-size: 12px;
+}
+.evidence-values > div {
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.evidence-values dt {
+  color: var(--muted);
+}
+.evidence-values dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.evidence-side blockquote {
+  margin: 18px 0 8px;
+  padding: 12px;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  white-space: pre-wrap;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.source-evidence-link {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.evidence-missing {
+  margin: 14px 0;
+  color: var(--refer);
+  font-size: 12px;
+}
+.rule-results-heading {
+  align-items: center;
+  margin: 28px 0 16px;
+}
+.rule-results-heading .section-heading {
+  margin: 0;
+}
+.examination-ledger {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.examination-ledger summary {
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 8px 0;
+}
+.examination-ledger .source-footnote {
+  margin-bottom: 16px;
+}
+@media (max-width: 1100px) {
+  .examination-heading {
+    flex-direction: column;
+  }
+}
+@media (max-width: 760px) {
+  .examination-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .examination-actions .button {
+    min-height: 44px;
+    flex: 1;
+    white-space: nowrap;
+  }
+  .examination-runbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .examination-runbar label {
+    max-width: 100%;
+  }
+  .examination-runbar > div {
+    text-align: left;
+  }
+  .examination-counts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .evidence-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .evidence-values > div {
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+  .comparison-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rule-results-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

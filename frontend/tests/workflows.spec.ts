@@ -117,8 +117,8 @@ test("case workspace exposes source records, keyboard tabs, and unknown-case sta
     ["Parties", "Parties", data.parties.length],
     ["Documents", "Document inventory", data.documents.length],
     ["Trade lines", "Trade lines", data.trade_lines.length],
-    ["Discrepancies", "Discrepancies", data.discrepancies.length],
-    ["Risk events", "Risk events", data.risk_events.length],
+    ["Reference findings", "Reference findings", data.discrepancies.length],
+    ["Reference risks", "Reference risks", data.risk_events.length],
     ["Approvals", "Approval history", data.approvals.length],
   ] as const) {
     await page.getByRole("tab", { name: new RegExp(`^${tab}`) }).click();

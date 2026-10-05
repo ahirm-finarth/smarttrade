@@ -114,3 +114,52 @@ export const documentSourceURL = (id: number, versionId: number) =>
   `${baseURL}/api/v1/documents/${id}/source?version_id=${versionId}`;
 export const documentPageURL = (id: number, versionId: number, page: number) =>
   `${baseURL}/api/v1/documents/${id}/pages/${page}/image?version_id=${versionId}`;
+
+export const getExaminations = (caseId: string) =>
+  getJSON<import("@/types/examinations").ExaminationRun[]>(
+    `/api/v1/cases/${encodeURIComponent(caseId)}/examinations`,
+  );
+export const getExamination = (runId: number) =>
+  getJSON<import("@/types/examinations").ExaminationDetail>(
+    `/api/v1/examinations/${runId}`,
+  );
+export const getCaseEvidence = (caseId: string) =>
+  getJSON<import("@/types/examinations").CurrentCaseEvidence>(
+    `/api/v1/cases/${encodeURIComponent(caseId)}/extracted-facts`,
+  );
+export async function runExamination(caseId: string, requestId: string) {
+  let response: Response;
+  try {
+    response = await fetch(
+      `${baseURL}/api/v1/cases/${encodeURIComponent(caseId)}/examinations`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ request_id: requestId }),
+        signal: AbortSignal.timeout(90000),
+      },
+    );
+  } catch {
+    throw new Error(
+      "Connection interrupted. Refresh examination history before retrying.",
+    );
+  }
+  if (!response.ok) {
+    const errors: Record<number, string> = {
+      404: "Case not found. Return to the case register.",
+      409: "An examination is already running. Refresh history to check its status.",
+      422: "This playbook has no configured documentary rule set.",
+      503: "Examination storage is temporarily unavailable. Refresh and try again.",
+    };
+    throw new Error(
+      errors[response.status] ||
+        "Examination could not run. Refresh and try again.",
+    );
+  }
+  return response.json() as Promise<
+    import("@/types/examinations").ExaminationDetail
+  >;
+}

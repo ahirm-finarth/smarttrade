@@ -1,19 +1,40 @@
 import copy
 from uuid import uuid4
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
+from app.models.domain import CaseDocument
 from app.services.decision_engine import decision_is_current, generate_decision, get_decision
 from app.services.examination_engine import run_examination
 from app.services.risk_orchestration import run_risk_checks
+from tests.test_examination_engine import add_document, import_case
 from tests.test_examination_engine import database as database_fixture  # noqa: F401
-from tests.test_examination_engine import import_case
 from tests.test_risk_orchestration import risk_case
 
 
 def prepared_case(session, risk=False):
     case = risk_case(session) if risk else import_case(session)
+    if risk:
+        document = session.scalar(
+            select(CaseDocument).where(
+                CaseDocument.case_pk == case.id, CaseDocument.file_name == "BILL_OF_LADING.pdf"
+            )
+        )
+        add_document(
+            session,
+            case,
+            "BILL_OF_LADING",
+            {
+                "vessel_name": "MV Meridian Halo",
+                "port_of_loading": "Port Lumen",
+                "port_of_discharge": "Port Azure",
+                "shipment_date": "2026-03-14",
+                "consignee": "Buyer LLC",
+            },
+            document=document,
+        )
     settings = Settings(_env_file=None)
     run_examination(session, settings, case.case_id)
     run_risk_checks(session, settings, case.case_id)

@@ -1,17 +1,17 @@
 # FinArth Smart Trade
 
-Phase 3 adds **deterministic documentary examination and a relational evidence graph** to the Phase 2 source-PDF workbench. Current extracted facts and versioned rules produce supported cross-document findings, with both original sources, immutable history and explicit incomplete states. Runtime examination never reads labelled references or calls the LLM.
+Phase 4 adds **auditable risk orchestration, replaceable synthetic providers and local duplicate trade checks** to the source-PDF and documentary examination workbench. Operational parties and current source facts produce separate risk signals with provider/policy provenance, immutable history and explicit unchecked or incomplete results. Runtime risk checks do not call the LLM or read risk-event/discrepancy ground truth.
 
 **Synthetic Demo Data:** supplied fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected PASS / REFER / BLOCK outcomes, reference findings/risks and approval events remain supplied references. Documentary examination is calculated separately and is not a final trade decision.
 
-Phase 3 is on [`phase-3`](https://github.com/ahirm-finarth/smarttrade/tree/phase-3), based on validated [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2). The foundation remains on [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1). See [architecture](docs/PHASE3_ARCHITECTURE.md) and [actual Phase 3 validation](docs/PHASE3_VALIDATION.md).
+Phase 4 is on [`phase-4`](https://github.com/ahirm-finarth/smarttrade/tree/phase-4), based on validated [`phase-3`](https://github.com/ahirm-finarth/smarttrade/tree/phase-3). Earlier work remains on [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2) and [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1). See [Phase 4 architecture](docs/PHASE4_ARCHITECTURE.md), [actual Phase 4 validation](docs/PHASE4_VALIDATION.md) and [Phase 3 evidence](docs/PHASE3_VALIDATION.md).
 
 ## Native setup
 
 Use Python 3.12+, uv, Node.js 20.9+ (verified with Node 22), npm, and the existing external MySQL 8-compatible database. No Docker or additional database service is used.
 
 ```sh
-git clone --branch phase-3 https://github.com/ahirm-finarth/smarttrade.git
+git clone --branch phase-4 https://github.com/ahirm-finarth/smarttrade.git
 cd smarttrade
 make setup
 # Only if no credential file already exists:
@@ -63,7 +63,7 @@ make frontend
 ```
 
 - Dashboard: http://localhost:3000/
-- Case workspace: `/cases/{case_id}`; select **Documents** or **Examination**.
+- Case workspace: `/cases/{case_id}`; select **Documents**, **Examination** or **Risk & Compliance**.
 - Document workspace: `/documents/{document_id}` (the internal numeric inventory ID).
 - Backend health: http://localhost:8000/health
 - API documentation: http://localhost:8000/docs
@@ -190,7 +190,7 @@ docs/                             Phase 1 and Phase 2 evidence
 
 ## Deferred scope
 
-Phase 3 stops at deterministic documentary comparisons, supported discrepancies and relational source evidence. Phase 4 or later owns UCP/ISBP regulatory inference, duplicate invoice/financing, sanctions/vessel/country/port/price checks, facility/credit checks, risk orchestration, final PASS / REFER / BLOCK outcomes, maker/checker actions, RAG/embeddings/vector retrieval, Smart Insights, SWIFT, core trade and payments. OCR/vision, cloud storage, distributed processing, richer multi-line schemas and production access controls require later infrastructure work.
+Phase 4 stops at separate risk signals, synthetic providers and explainable local duplicate candidates. Phase 5 or later owns final PASS / REFER / BLOCK decisions, the combined documentary/risk matrix, maker/checker actions, overrides, delegated authority, approval matrices, payment release, SWIFT/core trade posting, EDPMS/IDPMS, real sanctions/vessel/fair-value vendors, regulatory RAG/UCP/ISBP retrieval, MiniLM/embeddings/vector databases, Smart Insights and post-event monitoring. OCR/vision, cloud storage, distributed processing, richer multi-line schemas, facility/credit controls and production access controls require later work.
 
 ## Phase 3 examination
 
@@ -221,3 +221,32 @@ Examination routes:
 Ruleset `documentary-v1`: 41 unique definitions; Import LC 16, Export LC 14, Collection D/A 10, Guarantee 9 applicable rules. Four additive MySQL tables store examinations, executions, relations and calculated findings separately from the original reference inventory. No graph database or new infrastructure is required.
 
 Live validation detected four of five documentary reference families (five raw findings); guarantee demand classification confidence 0.72 falls below 0.85, leaving six guarantee comparisons for review. Precision 1.0000, recall 0.8000, F1 0.8889 on this small synthetic set. The packing-list reference extraction miss remains unchanged. This is not a production accuracy or final-decision claim.
+
+## Phase 4 risk and compliance
+
+Select **Risk & Compliance** and explicitly **Run risk checks**. Review category results, detected findings and individual provider checks. **View risk evidence** pairs the originating operational party/source fact with the provider's mock reference, result, rule ID/version and severity. Document links select the exact historical source version, extraction run and fact. Provider result details retain duplicate candidate identities, matched/different fields and their source evidence. The independent financing rule result remains visible in the risk execution audit.
+
+**Rerun risk checks** creates a new run. Select earlier runs from history; changes to current facts, provider configuration or rules show a stale-input notice. Completed means execution finished. A provider's clear result applies only to its configured synthetic list or local search; it does not clear the transaction. Missing references are **Not checked**, absent optional subjects **Not applicable**, uncertain evidence **Insufficient data**, and failed providers **Provider error**. Refresh history before retrying an uncertain submission; retries retain their request UUID. Active synchronous workers expire after five minutes; this is a native demo worker, not a distributed queue.
+
+```sh
+make run-demo-risk                  # New stored runs; operational inputs only
+make evaluate-demo-risk             # Offline labels; ignored JSON and Markdown reports
+backend/.venv/bin/python -m app.scripts.run_demo_risk --case-id ST-IMP-2026-0002
+```
+
+Seven provider categories share strict `RiskProvider`, `ProviderInput` and `ProviderResult` contracts. Four synthetic lookup providers read only `reference_screening.csv`; the duplicate provider compares current stored invoices; goods and fair-value providers accept explicit typed `GoodsPolicy` and `PriceBand` configurations. The default registry has no invented country/goods policy or price band. To replace a provider, implement `check()` and a credential-free versioned `snapshot()`, inject a `ProviderRegistry` into orchestration and test it before changing the default registry. No browser provider credentials or arbitrary evaluation handlers are supported.
+
+Eight routes under `/api/v1`:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| POST | `/cases/{case_id}/risk-runs` | Explicit run; optional JSON `request_id` UUID |
+| GET | `/cases/{case_id}/risk-runs` | History |
+| GET | `/cases/{case_id}/risk-runs/latest` | Latest detail |
+| GET | `/risk-runs/{run_id}` | Stored detail plus current-input flag |
+| GET | `/risk-runs/{run_id}/provider-checks` | Provider inputs/results |
+| GET | `/risk-runs/{run_id}/rule-executions` | Versioned risk policy audit |
+| GET | `/risk-runs/{run_id}/findings` | Calculated risk signals |
+| GET | `/cases/{case_id}/duplicate-candidates` | Read-only current cross-case search |
+
+Ruleset `risk-v1` has eight rules across screening, country, port, vessel, duplicate, goods and fair value. The five demo cases yield three supported signals on the risk Import LC and zero material risk findings on the other cases. Independent evaluation: TP 3, FP 0, FN 2; precision 1.0000, recall 0.6000, F1 0.7500. The supplied fair-value label lacks a price band, and the labelled historical invoice is absent from stored cases. Both remain counted misses; no price, historical invoice or financing event is fabricated.

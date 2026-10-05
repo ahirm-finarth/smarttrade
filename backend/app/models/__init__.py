@@ -1,4 +1,5 @@
 from app.models import (
+    decision,  # noqa: F401
     examination,  # noqa: F401
     risk,  # noqa: F401
 )

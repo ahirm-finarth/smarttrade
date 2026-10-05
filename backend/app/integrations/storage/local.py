@@ -1,4 +1,5 @@
 """Local immutable source storage. A malware scanner can precede save() later."""
+
 import hashlib
 import re
 from pathlib import Path
@@ -30,7 +31,9 @@ def validate_upload(content: bytes, filename: str, mime_type: str | None, max_by
     if not content or len(content) > max_bytes:
         raise InvalidDocument("PDF is empty or exceeds the upload limit")
     if not filename.lower().endswith(".pdf") or mime_type not in {
-        "application/pdf", "application/octet-stream", None,
+        "application/pdf",
+        "application/octet-stream",
+        None,
     }:
         raise InvalidDocument("Only PDF documents are supported")
     if not content.startswith(b"%PDF-"):

@@ -146,3 +146,48 @@ def test_mysql_examination_schema_and_persisted_evidence_routes():
             for relation in detail["relations"]:
                 assert relation["expected"]["fact_id"] == relation["source_fact_pk"]
                 assert relation["observed"]["fact_id"] == relation["target_fact_pk"]
+
+
+def test_mysql_risk_schema_and_persisted_provider_evidence_routes():
+    from app.models.risk import RiskRun
+
+    engine = get_engine()
+    inspector = inspect(engine)
+    for name in (
+        "smart_trade_risk_runs",
+        "smart_trade_provider_checks",
+        "smart_trade_risk_rule_executions",
+        "smart_trade_detected_risk_findings",
+    ):
+        assert name in inspector.get_table_names()
+        assert inspector.get_foreign_keys(name) and inspector.get_indexes(name)
+    with Session(engine) as session, TestClient(app) as client:
+        cases = session.scalars(select(TradeCase).where(TradeCase.dataset_key == DATASET_KEY)).all()
+        for case in cases:
+            run = session.scalar(
+                select(RiskRun)
+                .where(RiskRun.case_pk == case.id)
+                .order_by(RiskRun.run_number.desc())
+                .limit(1)
+            )
+            assert run is not None
+            response = client.get(f"/api/v1/risk-runs/{run.id}")
+            assert response.status_code == 200
+            detail = response.json()
+            assert detail["run"]["case_id"] == case.case_id
+            assert detail["run"]["summary_json"]["decision_computed"] is False
+            assert len(detail["checks"]) == sum(run.summary_json["checks"].values())
+            assert len(detail["executions"]) == run.summary_json["rules_executed"]
+            for finding in detail["findings"]:
+                evidence = finding["evidence_json"]
+                assert evidence["provider"]["result"]["synthetic"] is True
+                assert evidence["rule"]["version"] == finding["rule_version"]
+                assert evidence["provider"]["result"]["matched_records"]
+                if finding["category"] in {"port", "vessel"}:
+                    assert evidence["subject"]["evidence"][0]["source_verified"]
+            assert (
+                client.get(f"/api/v1/cases/{case.case_id}/duplicate-candidates").json()[
+                    "financing_status"
+                ]
+                == "NOT_CHECKED"
+            )

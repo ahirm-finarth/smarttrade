@@ -83,3 +83,42 @@ def test_unvalidated_llm_output_is_not_accepted():
     with pytest.raises(LLMUnavailable):
         classify_document(client, ParsedPDF([ParsedPage(1, "unknown", False)]))
     client.close()
+
+
+def test_truncated_json_is_retried_once_with_a_bounded_budget():
+    calls = []
+
+    def respond(request):
+        calls.append(json.loads(request.content)["max_tokens"])
+        content = (
+            "{"
+            if len(calls) == 1
+            else json.dumps(
+                {"document_type": "OTHER", "confidence": 0.5, "reason": "Unknown heading"}
+            )
+        )
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "length" if len(calls) == 1 else "stop",
+                        "message": {"content": content},
+                    }
+                ]
+            },
+        )
+
+    client = LLMClient(
+        Settings(
+            _env_file=None,
+            llm_api_url="https://example.invalid/v1",
+            llm_model="test",
+            llm_api_key=SecretStr("test-only"),
+        ),
+        httpx.MockTransport(respond),
+    )
+    result = client.structured([], Classification, max_tokens=1000)
+    assert result.document_type == "OTHER"
+    assert calls == [1000, 2000]
+    client.close()

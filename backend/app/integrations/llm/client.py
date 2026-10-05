@@ -71,23 +71,25 @@ class LLMClient:
     def structured(
         self, messages: list[dict[str, str]], schema: type[ResponseModel], max_tokens: int = 4096
     ) -> ResponseModel:
-        payload = self._request(
-            "POST",
-            "chat/completions",
-            json={
-                "model": self.model,
-                "messages": messages,
-                "max_tokens": max_tokens,
-                "temperature": 0,
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": schema.__name__,
-                        "schema": schema.model_json_schema(),
-                    },
+        request = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": 0,
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": schema.__name__,
+                    "schema": schema.model_json_schema(),
                 },
             },
-        )
+        }
+        payload = self._request("POST", "chat/completions", json=request)
+        # Reasoning-capable endpoints can consume the budget before producing JSON.
+        # Retry only explicit truncation, once, with a bounded larger budget.
+        if payload.get("choices", [{}])[0].get("finish_reason") == "length":
+            request["max_tokens"] = min(max_tokens * 2, 16000)
+            payload = self._request("POST", "chat/completions", json=request)
         try:
             choice = payload["choices"][0]
             if choice.get("finish_reason") == "length":

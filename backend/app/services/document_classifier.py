@@ -57,5 +57,5 @@ def classify_document(client: LLMClient, parsed: ParsedPDF) -> Classification:
             },
         ],
         Classification,
-        max_tokens=1024,
+        max_tokens=4096,
     )

@@ -8,10 +8,15 @@ from app.models.documents import DocumentProcessingRun, ExtractedFact
 from app.schemas.intelligence import StrictOutput, extraction_schema
 from app.services.document_classifier import source_payload
 
-DOCUMENT_EXTRACTION_PROMPT_VERSION = "extraction-v1"
+DOCUMENT_EXTRACTION_PROMPT_VERSION = "extraction-v2"
 
 
-def extract_document(client: LLMClient, parsed: ParsedPDF, document_type: str) -> StrictOutput:
+def extract_document(
+    client: LLMClient,
+    parsed: ParsedPDF,
+    document_type: str,
+    review_feedback: list[str] | None = None,
+) -> StrictOutput:
     schema = extraction_schema(document_type)
     return client.structured(
         [
@@ -37,15 +42,24 @@ def extract_document(client: LLMClient, parsed: ParsedPDF, document_type: str) -
                     f"Detected document type: {document_type}. Return only schema-valid JSON."
                 ),
             },
-            {"role": "user", "content": source_payload(parsed)},
+            {
+                "role": "user",
+                "content": source_payload(parsed)
+                + (
+                    "\nValidation feedback from the prior attempt. Re-extract from these pages: "
+                    + "; ".join(review_feedback)
+                    if review_feedback
+                    else ""
+                ),
+            },
         ],
         schema,
-        max_tokens=6000,
+        max_tokens=12000,
     )
 
 
-def persist_raw_facts(
-    session: Session, run: DocumentProcessingRun, extraction: StrictOutput, parsed: ParsedPDF
+def build_raw_facts(
+    run: DocumentProcessingRun, extraction: StrictOutput, parsed: ParsedPDF
 ) -> list[ExtractedFact]:
     pages = {page.page_number for page in parsed.pages}
     facts = []
@@ -67,6 +81,13 @@ def persist_raw_facts(
                 review_reason="Evidence and normalization pending",
             )
         )
+    return facts
+
+
+def persist_raw_facts(
+    session: Session, run: DocumentProcessingRun, extraction: StrictOutput, parsed: ParsedPDF
+) -> list[ExtractedFact]:
+    facts = build_raw_facts(run, extraction, parsed)
     session.add_all(facts)
     session.flush()
     return facts

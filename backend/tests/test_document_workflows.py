@@ -212,3 +212,28 @@ def test_document_api_end_to_end(context, monkeypatch):
             )
     finally:
         app.dependency_overrides.clear()
+
+
+def test_bad_source_quotes_get_one_bounded_repair_attempt(context):
+    engine, settings = context
+
+    class RepairLLM(MockLLM):
+        attempts = 0
+
+        def structured(self, messages, schema, max_tokens):
+            result = super().structured(messages, schema, max_tokens)
+            if schema.__name__ != "Classification":
+                self.attempts += 1
+                if self.attempts == 1:
+                    result.fields.invoice_number.source_text = "Invoice reference"
+                else:
+                    assert "Validation feedback" in messages[1]["content"]
+            return result
+
+    with Session(engine) as session:
+        version, _ = register_document(session, settings, "TEST-1", PDF.read_bytes(), PDF.name)
+        run = process_document(session, settings, version.document_pk, client_factory=RepairLLM)
+        assert run.status == "COMPLETED"
+        assert run.metadata_json["extraction_attempts"] == 2
+        assert all(f.evidence_status == "SUPPORTED" for f in run.facts)
+        assert len(run.facts) == 2

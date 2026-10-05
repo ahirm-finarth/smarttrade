@@ -20,8 +20,8 @@ from app.services.document_classifier import (
 )
 from app.services.document_extraction import (
     DOCUMENT_EXTRACTION_PROMPT_VERSION,
+    build_raw_facts,
     extract_document,
-    persist_raw_facts,
 )
 from app.services.documents import DocumentConflict, get_version, read_source
 from app.services.evidence import normalize_and_validate
@@ -64,7 +64,7 @@ def process_document(
         .limit(1)
     )
     if previous and previous.status in ACTIVE:
-        if previous.started_at > now() - timedelta(minutes=15):
+        if previous.started_at > now() - timedelta(minutes=30):
             session.rollback()
             raise DocumentConflict("Document is already being processed")
         _stage(
@@ -135,9 +135,21 @@ def process_document(
             _stage(session, version, run, "NEEDS_REVIEW", "No supported extraction schema", True)
             return run
         _stage(session, version, run, "EXTRACTING")
-        extracted = extract_document(client, parsed, classification.document_type)
-        facts = persist_raw_facts(session, run, extracted, parsed)
-        normalize_and_validate(facts, classification.document_type, parsed)
+        feedback = None
+        for _attempt in range(2):
+            extracted = extract_document(client, parsed, classification.document_type, feedback)
+            facts = build_raw_facts(run, extracted, parsed)
+            normalize_and_validate(facts, classification.document_type, parsed)
+            feedback = [
+                f"{f.field_name}: {f.review_reason}; quote label and exact value together"
+                for f in facts
+                if f.evidence_status == "NEEDS_REVIEW"
+            ]
+            if not feedback:
+                break
+        run.metadata_json = {**run.metadata_json, "extraction_attempts": _attempt + 1}
+        session.add_all(facts)
+        session.flush()
         review = (
             not facts
             or classification.confidence < 0.7

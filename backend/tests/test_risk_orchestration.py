@@ -1,14 +1,18 @@
 import copy
+from datetime import timedelta
 from uuid import uuid4
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.integrations.risk.contracts import ProviderRegistry
 from app.integrations.risk.synthetic import SyntheticScreeningProvider, load_references
-from app.models.domain import CaseDocument, CaseParty
+from app.models.domain import CaseDocument, CaseParty, TradeCase, now
 from app.models.risk import RiskRun
+from app.services import risk_orchestration
+from app.services.documents import DocumentConflict
 from app.services.risk_orchestration import get_risk_run, risk_inputs_current, run_risk_checks
 from tests.test_examination_engine import add_document, import_case
 from tests.test_examination_engine import database as database_fixture  # noqa: F401
@@ -107,3 +111,99 @@ def test_rerun_snapshot_and_submission_dedup_are_immutable(database):
         old = get_risk_run(s, first.id)
         assert old.input_snapshot_json == original and [c.result_json for c in old.checks] == checks
         assert s.scalar(select(RiskRun).where(RiskRun.id == first.id)).status == "COMPLETED"
+
+
+def test_missing_reference_source_is_audited_partial_not_clear(database, monkeypatch):
+    def unavailable():
+        raise OSError("private-location")
+
+    monkeypatch.setattr(risk_orchestration, "load_references", unavailable)
+    with Session(database) as s:
+        case = risk_case(s)
+        run = run_risk_checks(s, Settings(_env_file=None), case.case_id)
+        assert run.status == "PARTIAL" and not run.findings
+        assert any(c.status == "PROVIDER_ERROR" for c in run.checks)
+        assert any(c.provider_type == "duplicate" and c.status == "CLEAR" for c in run.checks)
+        assert "private-location" not in str(run.input_snapshot_json)
+        assert "private-location" not in str([c.result_json for c in run.checks])
+
+
+def test_cross_case_current_invoice_candidate_retains_both_source_chains(database):
+    with Session(database) as s:
+        case = import_case(s)
+        candidate = TradeCase(case_id="UNIT-OTHER", product_playbook=case.product_playbook)
+        s.add(candidate)
+        s.commit()
+        invoice = add_document(
+            s,
+            candidate,
+            "COMMERCIAL_INVOICE",
+            {
+                "invoice_number": "INV 001",
+                "seller": "ABC Exports Private Limited",
+                "buyer": "Buyer LLC",
+                "total_amount": "USD 100.00",
+            },
+        )
+        run = run_risk_checks(s, Settings(_env_file=None), case.case_id)
+        finding = next(f for f in run.findings if f.category == "duplicate")
+        evidence = finding.evidence_json
+        assert evidence["candidate"]["candidate_case_id"] == candidate.case_id
+        assert evidence["candidate"]["candidate_document_id"] == invoice.id
+        assert evidence["candidate"]["candidate_evidence"][0]["source_text"]
+        assert evidence["subject"]["evidence"][0]["source_text"]
+        assert evidence["candidate"]["financing_status"] == "NOT_CHECKED"
+        assert not any(f.finding_type == "POTENTIAL_DUPLICATE_FINANCING" for f in run.findings)
+        # Replacing the candidate's current invoice retires the old matching evidence.
+        add_document(
+            s,
+            candidate,
+            "COMMERCIAL_INVOICE",
+            {
+                "invoice_number": "INV 002",
+                "seller": "ABC Exports Private Limited",
+                "buyer": "Buyer LLC",
+                "total_amount": "USD 100.00",
+            },
+            document=invoice,
+        )
+        next_run = run_risk_checks(s, Settings(_env_file=None), case.case_id)
+        assert not any(f.category == "duplicate" for f in next_run.findings)
+        assert get_risk_run(s, run.id).findings[0].evidence_json == evidence
+
+
+def test_worker_lease_rejects_concurrency_and_preserves_expired_history(database):
+    with Session(database) as s:
+        case = import_case(s)
+        settings = Settings(_env_file=None)
+        first = run_risk_checks(s, settings, case.case_id)
+        first.status = "RUNNING"
+        first.started_at = now()
+        s.commit()
+        with pytest.raises(DocumentConflict):
+            run_risk_checks(s, settings, case.case_id)
+        first.started_at = now() - timedelta(minutes=6)
+        s.commit()
+        next_run = run_risk_checks(s, settings, case.case_id)
+        assert next_run.run_number == first.run_number + 1
+        assert get_risk_run(s, first.id).status == "FAILED"
+
+
+def test_policy_failure_rolls_back_partial_outputs_but_retains_run(database, monkeypatch):
+    calls = 0
+    original = risk_orchestration.interpret
+
+    def fail_after_first(rule, result):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise ValueError("private-error")
+        return original(rule, result)
+
+    monkeypatch.setattr(risk_orchestration, "interpret", fail_after_first)
+    with Session(database) as s:
+        case = risk_case(s)
+        run = run_risk_checks(s, Settings(_env_file=None), case.case_id)
+        assert run.status == "FAILED"
+        assert not run.checks and not run.executions and not run.findings
+        assert "private-error" not in run.error_message

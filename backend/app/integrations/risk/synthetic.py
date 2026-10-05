@@ -94,6 +94,22 @@ class SyntheticLookupProvider:
         )
 
 
+class UnavailableSyntheticProvider(SyntheticLookupProvider):
+    """Preserve an auditable check when the reference source cannot be loaded."""
+
+    def __init__(self, category: Category):
+        super().__init__(category, [])
+
+    def snapshot(self):
+        return {**super().snapshot(), "reference_available": False}
+
+    def check(self, subject: ProviderInput) -> ProviderResult:
+        return ProviderResult(
+            status=CheckStatus.PROVIDER_ERROR,
+            reason="Synthetic reference source unavailable; private diagnostics suppressed",
+        )
+
+
 class SyntheticScreeningProvider(SyntheticLookupProvider):
     def __init__(self, records):
         super().__init__(Category.SCREENING, records)

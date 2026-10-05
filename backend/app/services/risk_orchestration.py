@@ -4,6 +4,7 @@ from collections import Counter
 from datetime import timedelta
 from uuid import uuid4
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -19,6 +20,7 @@ from app.integrations.risk.synthetic import (
     SyntheticPortRiskProvider,
     SyntheticScreeningProvider,
     SyntheticVesselRiskProvider,
+    UnavailableSyntheticProvider,
     load_references,
 )
 from app.integrations.risk.trade_policy import (
@@ -45,13 +47,22 @@ class RiskRunNotFound(Exception):
 
 
 def default_registry(profiles):
-    records = load_references()
-    return ProviderRegistry(
-        [
+    try:
+        records = load_references()
+        reference_providers = [
             SyntheticScreeningProvider(records),
             SyntheticCountryRiskProvider(records),
             SyntheticPortRiskProvider(records),
             SyntheticVesselRiskProvider(records),
+        ]
+    except (OSError, ValidationError, UnicodeError):
+        reference_providers = [
+            UnavailableSyntheticProvider(category)
+            for category in (Category.SCREENING, Category.COUNTRY, Category.PORT, Category.VESSEL)
+        ]
+    return ProviderRegistry(
+        [
+            *reference_providers,
             LocalDuplicateTradeProvider(profiles),
             SyntheticGoodsRiskProvider(),
             SyntheticFairValueProvider(),

@@ -109,6 +109,8 @@ def validate_rules(rules: tuple[RiskRule, ...]) -> tuple[RiskRule, ...]:
 def interpret(rule: RiskRule, result: ProviderResult) -> dict:
     if rule.handler not in {"SIGNAL", "DUPLICATE", "FINANCING_EVENT"}:
         return {"status": "NOT_CHECKED", "reason": "Unknown handler refused", "findings": []}
+    if result.status in {CheckStatus.PROVIDER_ERROR, CheckStatus.INSUFFICIENT_DATA}:
+        return {"status": result.status, "reason": result.reason, "findings": []}
     if result.status not in rule.trigger_statuses and rule.handler != "FINANCING_EVENT":
         return {"status": result.status, "reason": result.reason, "findings": []}
     if rule.handler == "SIGNAL":

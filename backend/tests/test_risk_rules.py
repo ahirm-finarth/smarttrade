@@ -43,3 +43,9 @@ def test_file_duplicate_is_not_financing_event():
     )
     assert interpret(RULES[4], result)["findings"][0]["finding_type"] == "EXACT_FILE_DUPLICATE"
     assert not interpret(RULES[5], result)["findings"]
+
+
+@pytest.mark.parametrize("status", ["PROVIDER_ERROR", "INSUFFICIENT_DATA"])
+def test_financing_rule_preserves_unavailable_provider_status(status):
+    output = interpret(RULES[5], ProviderResult(status=status, reason="Unavailable input"))
+    assert output["status"] == status and not output["findings"]

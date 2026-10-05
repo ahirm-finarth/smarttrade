@@ -19,7 +19,7 @@ from app.services.examination_engine import examination_is_current, get_examinat
 from app.services.normalization import normalize_value
 
 
-@pytest.fixture()
+@pytest.fixture(name="database")
 def database():
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
@@ -195,6 +195,9 @@ def test_rerun_and_new_source_keep_historical_inputs_immutable(database):
         original = copy.deepcopy(first.input_snapshot_json)
         execution_inputs = [copy.deepcopy(e.input_json) for e in first.executions]
         assert examination_is_current(s, first)
+        assert not examination_is_current(
+            s, first, Settings(_env_file=None, examination_min_confidence="0.95")
+        )
         doc = s.scalar(
             select(CaseDocument).where(CaseDocument.file_name == "COMMERCIAL_INVOICE.pdf")
         )

@@ -6,11 +6,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.v1.cases import router
 from app.api.v1.documents import router as document_router
+from app.api.v1.examinations import router as examination_router
 from app.core.config import get_settings
 from app.db.session import database_connected
 from app.integrations.storage.local import InvalidDocument
 from app.services.cases import CaseNotFound
 from app.services.documents import DocumentConflict, DocumentNotFound
+from app.services.examination_engine import ExaminationNotConfigured, ExaminationNotFound
 
 
 class HealthResponse(BaseModel):
@@ -41,6 +43,17 @@ def health():
 
 app.include_router(router)
 app.include_router(document_router)
+app.include_router(examination_router)
+
+
+@app.exception_handler(ExaminationNotFound)
+async def examination_not_found(request, exc):
+    return JSONResponse(status_code=404, content={"detail": "Documentary examination not found"})
+
+
+@app.exception_handler(ExaminationNotConfigured)
+async def examination_not_configured(request, exc):
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
 
 
 @app.exception_handler(CaseNotFound)

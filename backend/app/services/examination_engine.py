@@ -10,7 +10,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.models.domain import TradeCase, now
 from app.models.examination import DetectedDiscrepancy, ExaminationRun, FactRelation, RuleExecution
 from app.rules import RULESET_VERSION, load_rules
@@ -227,7 +227,9 @@ def examination_history(session: Session, case_id: str) -> list[ExaminationRun]:
     )
 
 
-def examination_is_current(session: Session, run: ExaminationRun) -> bool:
+def examination_is_current(
+    session: Session, run: ExaminationRun, settings: Settings | None = None
+) -> bool:
     case = session.get(TradeCase, run.case_pk)
     try:
         rules = load_rules(case.product_playbook)
@@ -236,6 +238,6 @@ def examination_is_current(session: Session, run: ExaminationRun) -> bool:
     snapshot = {
         "evidence": load_case_evidence(session, case),
         "rules": [r.model_dump(mode="json") for r in rules],
-        "confidence_threshold": run.input_snapshot_json["confidence_threshold"],
+        "confidence_threshold": str((settings or get_settings()).examination_min_confidence),
     }
     return fingerprint(snapshot) == run.input_fingerprint

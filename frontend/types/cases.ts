@@ -34,6 +34,12 @@ export interface CaseDocument {
   received: boolean | null;
   file_name: Nullable;
   extraction_confidence: Nullable;
+  version_number: number | null;
+  page_count: number | null;
+  processing_status: string;
+  detected_type: Nullable;
+  extraction_status: string;
+  source_updated_at: Nullable;
 }
 export interface TradeLine {
   id: number;

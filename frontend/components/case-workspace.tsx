@@ -9,6 +9,7 @@ import {
   History,
   Rows3,
 } from "lucide-react";
+import { DocumentInventory } from "@/components/document-inventory";
 import { DataTable, SectionHeading, supplied } from "@/components/ui";
 import { money, dateTime } from "@/lib/format";
 import type { CaseDetail } from "@/types/cases";
@@ -24,8 +25,14 @@ const tabs = [
 ] as const;
 type Tab = (typeof tabs)[number]["id"];
 
-export function CaseWorkspace({ tradeCase: data }: { tradeCase: CaseDetail }) {
-  const [active, setActive] = useState<Tab>("overview");
+export function CaseWorkspace({
+  tradeCase: data,
+  initialTab = "overview",
+}: {
+  tradeCase: CaseDetail;
+  initialTab?: "overview" | "documents";
+}) {
+  const [active, setActive] = useState<Tab>(initialTab);
   const inventory = [
     {
       id: "parties",
@@ -193,63 +200,11 @@ export function CaseWorkspace({ tradeCase: data }: { tradeCase: CaseDetail }) {
             </>
           )}
           {tab.id === "documents" && (
-            <>
-              <SectionHeading
-                title="Document inventory"
-                count={data.documents.length}
-              >
-                Supplied document metadata only. Source confidence is a demo
-                reference; no files are extracted or examined.
-              </SectionHeading>
-              <DataTable
-                rows={data.documents}
-                empty="No document inventory was supplied for this case."
-                columns={[
-                  {
-                    label: "Document / ID",
-                    render: (r) => (
-                      <>
-                        {supplied(r.document_type)}
-                        <span className="cell-subline">{r.document_id}</span>
-                      </>
-                    ),
-                  },
-                  { label: "Reference", render: (r) => supplied(r.reference) },
-                  {
-                    label: "File name",
-                    render: (r) => (
-                      <span className="filename">{supplied(r.file_name)}</span>
-                    ),
-                  },
-                  {
-                    label: "Expected",
-                    render: (r) =>
-                      r.expected === null
-                        ? "Not supplied"
-                        : r.expected
-                          ? "Yes"
-                          : "No",
-                  },
-                  {
-                    label: "Received",
-                    render: (r) =>
-                      r.received === null
-                        ? "Not supplied"
-                        : r.received
-                          ? "Yes"
-                          : "No",
-                  },
-                  {
-                    label: "Source confidence",
-                    render: (r) =>
-                      r.extraction_confidence === null
-                        ? "Not supplied"
-                        : `${(Number(r.extraction_confidence) * 100).toFixed(0)}%`,
-                    className: "numeric",
-                  },
-                ]}
-              />
-            </>
+            <DocumentInventory
+              caseId={data.case_id}
+              initial={data.documents}
+              active={active === "documents"}
+            />
           )}
           {tab.id === "trade_lines" && (
             <>
@@ -296,7 +251,7 @@ export function CaseWorkspace({ tradeCase: data }: { tradeCase: CaseDetail }) {
                 title="Discrepancies"
                 count={data.discrepancies.length}
               >
-                Historical demo findings from the source. Phase 1 does not
+                Historical demo findings from the source. Smart Trade does not
                 perform documentary examination.
               </SectionHeading>
               <DataTable

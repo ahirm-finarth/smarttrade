@@ -9,10 +9,13 @@ import { CaseWorkspace } from "@/components/case-workspace";
 export const dynamic = "force-dynamic";
 export default async function CasePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ caseId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { caseId } = await params;
+  const { tab } = await searchParams;
   let tradeCase;
   try {
     tradeCase = await getCase(caseId);
@@ -69,7 +72,10 @@ export default async function CasePage({
           </p>
         </div>
       )}
-      <CaseWorkspace tradeCase={tradeCase} />
+      <CaseWorkspace
+        tradeCase={tradeCase}
+        initialTab={tab === "documents" ? "documents" : "overview"}
+      />
     </div>
   );
 }

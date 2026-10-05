@@ -129,9 +129,11 @@ function initialExecution(detail: ExaminationDetail) {
 export function ExaminationWorkspace({
   caseId,
   active,
+  initialRunId,
 }: {
   caseId: string;
   active: boolean;
+  initialRunId?: number;
 }) {
   const [history, setHistory] = useState<ExaminationRun[]>([]);
   const [detail, setDetail] = useState<ExaminationDetail | null>(null);
@@ -154,7 +156,9 @@ export function ExaminationWorkspace({
           getExaminations(caseId),
           getCaseEvidence(caseId),
         ]);
-        const id = runId ?? runs[0]?.id;
+        const id = runId ?? initialRunId ?? runs[0]?.id;
+        if (id && !runs.some((r) => r.id === id))
+          throw new Error("Unknown case examination run");
         const next = id ? await getExamination(id) : null;
         if (ticket !== sequence.current) return;
         setHistory(runs);
@@ -171,7 +175,7 @@ export function ExaminationWorkspace({
         if (ticket === sequence.current) setLoading(false);
       }
     },
-    [caseId],
+    [caseId, initialRunId],
   );
   useEffect(() => {
     if (!active || loaded) return;

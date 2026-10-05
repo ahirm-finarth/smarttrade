@@ -26,9 +26,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </Link>
         </nav>
         <div className="sidebar-note">
-          <span className="phase-label">PHASE 4</span>
-          <p>Documentary evidence and auditable synthetic risk controls.</p>
-          <span className="read-only">Evidence and risk controls</span>
+          <span className="phase-label">PHASE 5</span>
+          <p>Evidence-led decisions and governed demo approvals.</p>
+          <span className="read-only">Decision and approval controls</span>
         </div>
         <div className="sidebar-foot">
           FinArth Smart Trade<span>Synthetic demonstration</span>
@@ -46,7 +46,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
         <footer className="app-footer">
-          <span>FinArth Smart Trade · Phase 4</span>
+          <span>FinArth Smart Trade · Phase 5</span>
           <span>Expected outcomes are supplied demo references.</span>
         </footer>
       </div>

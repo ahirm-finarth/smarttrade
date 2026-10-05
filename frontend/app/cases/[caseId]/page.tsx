@@ -12,10 +12,20 @@ export default async function CasePage({
   searchParams,
 }: {
   params: Promise<{ caseId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{
+    tab?: string;
+    decision_id?: string;
+    examination_run_id?: string;
+    risk_run_id?: string;
+  }>;
 }) {
   const { caseId } = await params;
-  const { tab } = await searchParams;
+  const query = await searchParams;
+  const { tab } = query;
+  const positive = (value?: string) =>
+    value && /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value))
+      ? Number(value)
+      : undefined;
   let tradeCase;
   try {
     tradeCase = await getCase(caseId);
@@ -74,11 +84,18 @@ export default async function CasePage({
         </div>
       )}
       <CaseWorkspace
+        key={`${caseId}:${tab}:${query.decision_id}:${query.examination_run_id}:${query.risk_run_id}`}
         tradeCase={tradeCase}
+        initialDecisionId={positive(query.decision_id)}
+        initialExaminationId={positive(query.examination_run_id)}
+        initialRiskId={positive(query.risk_run_id)}
         initialTab={
           tab === "documents" ||
           tab === "examination" ||
-          tab === "risk_compliance"
+          tab === "risk_compliance" ||
+          tab === "decision" ||
+          tab === "workflow" ||
+          tab === "audit"
             ? tab
             : "overview"
         }

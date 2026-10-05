@@ -10,6 +10,9 @@ import {
   Rows3,
 } from "lucide-react";
 import { RiskWorkspace } from "@/components/risk-workspace";
+import { GovernedApprovals } from "@/components/governed-approvals";
+import { CaseAudit } from "@/components/case-audit";
+import { DecisionWorkspace } from "@/components/decision-workspace";
 import { ExaminationWorkspace } from "@/components/examination-workspace";
 import { DocumentInventory } from "@/components/document-inventory";
 import { DataTable, SectionHeading, supplied } from "@/components/ui";
@@ -22,6 +25,9 @@ const tabs = [
   { id: "documents", label: "Documents" },
   { id: "examination", label: "Examination" },
   { id: "risk_compliance", label: "Risk & Compliance" },
+  { id: "decision", label: "Decision" },
+  { id: "workflow", label: "Workflow" },
+  { id: "audit", label: "Audit" },
   { id: "trade_lines", label: "Trade lines" },
   { id: "discrepancies", label: "Reference findings" },
   { id: "risk_events", label: "Reference risks" },
@@ -32,9 +38,22 @@ type Tab = (typeof tabs)[number]["id"];
 export function CaseWorkspace({
   tradeCase: data,
   initialTab = "overview",
+  initialDecisionId,
+  initialExaminationId,
+  initialRiskId,
 }: {
   tradeCase: CaseDetail;
-  initialTab?: "overview" | "documents" | "examination" | "risk_compliance";
+  initialTab?:
+    | "overview"
+    | "documents"
+    | "examination"
+    | "risk_compliance"
+    | "decision"
+    | "workflow"
+    | "audit";
+  initialDecisionId?: number;
+  initialExaminationId?: number;
+  initialRiskId?: number;
 }) {
   const [active, setActive] = useState<Tab>(initialTab);
   const tabStrip = useRef<HTMLDivElement>(null);
@@ -125,9 +144,10 @@ export function CaseWorkspace({
             {tab.label}
             {tab.id !== "overview" &&
               tab.id !== "examination" &&
-              tab.id !== "risk_compliance" && (
-                <span>{data[tab.id].length}</span>
-              )}
+              tab.id !== "risk_compliance" &&
+              tab.id !== "decision" &&
+              tab.id !== "workflow" &&
+              tab.id !== "audit" && <span>{data[tab.id].length}</span>}
           </button>
         ))}
       </div>
@@ -236,12 +256,31 @@ export function CaseWorkspace({
             <ExaminationWorkspace
               caseId={data.case_id}
               active={active === "examination"}
+              initialRunId={initialExaminationId}
             />
           )}
           {tab.id === "risk_compliance" && (
             <RiskWorkspace
               caseId={data.case_id}
               active={active === "risk_compliance"}
+              initialRunId={initialRiskId}
+            />
+          )}
+          {tab.id === "workflow" && (
+            <GovernedApprovals
+              caseId={data.case_id}
+              active={active === "workflow"}
+              initialId={initialDecisionId}
+            />
+          )}
+          {tab.id === "audit" && (
+            <CaseAudit caseId={data.case_id} active={active === "audit"} />
+          )}
+          {tab.id === "decision" && (
+            <DecisionWorkspace
+              caseId={data.case_id}
+              active={active === "decision"}
+              initialId={initialDecisionId}
             />
           )}
           {tab.id === "trade_lines" && (

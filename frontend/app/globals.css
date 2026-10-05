@@ -1879,3 +1879,191 @@ mark {
   max-height: 340px;
   overflow: auto;
 }
+
+/* Governed decision and approval ledger extends the existing evidence surfaces. */
+.decision-workspace label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.decision-workspace select,
+.decision-workspace textarea,
+.decision-workspace input:not([type="checkbox"]) {
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.decision-workspace textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.decision-outcomes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 20px 0 10px;
+}
+.decision-outcomes > div {
+  padding: 20px 0;
+}
+.decision-outcomes > div + div {
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+}
+.decision-outcomes dt,
+.decision-sources dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.decision-outcomes dd {
+  margin: 10px 0;
+  font-size: 18px;
+}
+.decision-outcomes p {
+  color: var(--muted);
+  font-size: 12px;
+}
+.decision-sources {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+.decision-sources dd {
+  margin: 5px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.decision-sources a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.decision-policy,
+.decision-advisory {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 24px 0;
+}
+.decision-policy summary,
+.decision-advisory summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 14px 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.decision-advisory > p {
+  margin: 8px 0 16px;
+  max-width: 75ch;
+  font-size: 13px;
+}
+.decision-advisory .button {
+  margin-bottom: 16px;
+}
+.advisory-output {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+  font-size: 13px;
+  max-width: 75ch;
+}
+.advisory-output h3 {
+  font-size: 14px;
+  margin: 20px 0 8px;
+}
+.advisory-output p {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.workflow-identity {
+  display: grid;
+  grid-template-columns: minmax(240px, 380px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: end;
+  margin: 20px 0;
+}
+.workflow-identity p {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 65ch;
+}
+.workflow-task {
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+  scroll-margin-top: 90px;
+}
+.workflow-task h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.workflow-task > p {
+  max-width: 75ch;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.workflow-form {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+  margin-top: 16px;
+}
+.workflow-form .button {
+  justify-self: start;
+  min-height: 44px;
+}
+.workflow-form fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.workflow-form legend {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.decision-workspace .workflow-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--ink);
+}
+.workflow-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.audit-filter {
+  margin: 20px 0;
+  max-width: 380px;
+}
+@media (max-width: 760px) {
+  .decision-outcomes,
+  .decision-sources,
+  .workflow-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .decision-outcomes > div + div {
+    padding: 20px 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .workflow-identity {
+    gap: 12px;
+  }
+  .workflow-form .button {
+    width: 100%;
+  }
+}

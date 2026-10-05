@@ -203,3 +203,60 @@ export async function runRiskChecks(caseId: string, requestId: string) {
   }
   return response.json() as Promise<import("@/types/risk").RiskDetail>;
 }
+
+export const getDecisions = (caseId: string) =>
+  getJSON<import("@/types/decisions").DecisionRun[]>(
+    `/api/v1/cases/${encodeURIComponent(caseId)}/decisions`,
+  );
+export const getDecision = (id: number, actorId = "maker.demo") =>
+  getJSON<import("@/types/decisions").DecisionDetail>(
+    `/api/v1/decisions/${id}?actor_id=${encodeURIComponent(actorId)}`,
+  );
+export const getDemoActors = () =>
+  getJSON<import("@/types/decisions").DemoActor[]>("/api/v1/demo-actors");
+export const getAudit = (caseId: string) =>
+  getJSON<import("@/types/decisions").AuditEntry[]>(
+    `/api/v1/cases/${encodeURIComponent(caseId)}/audit`,
+  );
+
+export async function governedCommand<T>(
+  path: string,
+  body: unknown,
+  advisory = false,
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${baseURL}/api/v1${path}`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(advisory ? 390000 : 90000),
+    });
+  } catch {
+    throw new Error(
+      "Connection interrupted. Refresh saved history before retrying this request.",
+    );
+  }
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    const detail =
+      payload && typeof payload.detail === "string" ? payload.detail : null;
+    const errors: Record<number, string> = {
+      403: "This demo identity cannot perform that action.",
+      409: "Workflow or evidence changed. Refresh history before acting.",
+      422: "Provide the required rationale and valid action details.",
+      503: advisory
+        ? "Advisory summary is unavailable. Deterministic workflow is unchanged."
+        : "Decision storage is temporarily unavailable. Refresh and retry.",
+    };
+    throw new Error(
+      detail ||
+        errors[response.status] ||
+        "The request could not complete. Refresh history.",
+    );
+  }
+  return response.json() as Promise<T>;
+}

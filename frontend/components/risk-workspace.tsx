@@ -66,9 +66,11 @@ function firstCheck(data: RiskDetail) {
 export function RiskWorkspace({
   caseId,
   active,
+  initialRunId,
 }: {
   caseId: string;
   active: boolean;
+  initialRunId?: number;
 }) {
   const [history, setHistory] = useState<RiskRun[]>([]);
   const [data, setData] = useState<RiskDetail | null>(null);
@@ -87,7 +89,9 @@ export function RiskWorkspace({
       setError("");
       try {
         const runs = await getRiskRuns(caseId);
-        const target = id ?? runs[0]?.id;
+        const target = id ?? initialRunId ?? runs[0]?.id;
+        if (target && !runs.some((r) => r.id === target))
+          throw new Error("Unknown case risk run");
         const next = target ? await getRiskRun(target) : null;
         if (ticket !== sequence.current) return;
         setHistory(runs);
@@ -103,7 +107,7 @@ export function RiskWorkspace({
         if (ticket === sequence.current) setLoading(false);
       }
     },
-    [caseId],
+    [caseId, initialRunId],
   );
   useEffect(() => {
     if (!active || loaded) return;

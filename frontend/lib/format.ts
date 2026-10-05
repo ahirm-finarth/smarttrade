@@ -1,4 +1,8 @@
-export function money(value: string | null, currency: string | null, includeCurrency = true): string {
+export function money(
+  value: string | null,
+  currency: string | null,
+  includeCurrency = true,
+): string {
   if (value === null) return "Not supplied";
   // Format the exact DECIMAL string without a floating-point conversion.
   const [whole, fractional = ""] = value.split(".");
@@ -8,7 +12,11 @@ export function money(value: string | null, currency: string | null, includeCurr
 }
 export function dateTime(value: string | null): string {
   if (!value) return "Not supplied";
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata",
-  }).format(new Date(value)) + " IST";
+  return (
+    new Intl.DateTimeFormat("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kolkata",
+    }).format(new Date(value)) + " IST"
+  );
 }

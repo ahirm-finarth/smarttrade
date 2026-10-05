@@ -6,5 +6,14 @@ import { RefreshCw } from "lucide-react";
 export function RefreshButton() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  return <button className="button button-secondary" disabled={pending} onClick={() => startTransition(() => router.refresh())}><RefreshCw size={15} />{pending ? "Refreshing…" : "Refresh data"}</button>;
+  return (
+    <button
+      className="button button-secondary"
+      disabled={pending}
+      onClick={() => startTransition(() => router.refresh())}
+    >
+      <RefreshCw size={15} />
+      {pending ? "Refreshing…" : "Refresh data"}
+    </button>
+  );
 }

@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     def blank_secret(cls, value):
         return value or None
 
+    @field_validator("document_storage_root")
+    @classmethod
+    def resolve_storage_root(cls, value: Path):
+        return value if value.is_absolute() else ROOT / value
+
     @property
     def sqlalchemy_url(self) -> URL:
         if self.database_url:

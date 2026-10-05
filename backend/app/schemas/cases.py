@@ -45,6 +45,12 @@ class Document(ReadModel):
     received: bool | None
     file_name: str | None
     extraction_confidence: Decimal | None
+    version_number: int | None = None
+    page_count: int | None = None
+    processing_status: str = "NOT_REGISTERED"
+    detected_type: str | None = None
+    extraction_status: str = "NOT_STARTED"
+    source_updated_at: datetime | None = None
 
 
 class Line(ReadModel):

@@ -1,7 +1,8 @@
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models.domain import TradeCase
+from app.models.documents import DocumentVersion
+from app.models.domain import CaseDocument, TradeCase
 from app.services.demo_import import DATASET_KEY
 
 
@@ -38,7 +39,9 @@ class CaseRepository:
             .where(TradeCase.case_id == case_id)
             .options(
                 selectinload(TradeCase.parties),
-                selectinload(TradeCase.documents),
+                selectinload(TradeCase.documents)
+                .selectinload(CaseDocument.versions)
+                .selectinload(DocumentVersion.runs),
                 selectinload(TradeCase.trade_lines),
                 selectinload(TradeCase.discrepancies),
                 selectinload(TradeCase.risk_events),

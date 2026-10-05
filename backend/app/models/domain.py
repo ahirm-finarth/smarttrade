@@ -102,6 +102,39 @@ class CaseDocument(CaseRelated, Base):
     extraction_confidence: Mapped[Decimal | None] = mapped_column(Numeric(5, 4))
     versions: Mapped[list["DocumentVersion"]] = relationship(cascade="all, delete-orphan")
 
+    @property
+    def latest_version(self):
+        return max(self.versions, key=lambda v: v.version_number, default=None)
+
+    @property
+    def latest_run(self):
+        version = self.latest_version
+        return max(version.runs, key=lambda r: r.run_number, default=None) if version else None
+
+    @property
+    def version_number(self):
+        return self.latest_version.version_number if self.latest_version else None
+
+    @property
+    def page_count(self):
+        return self.latest_version.page_count if self.latest_version else None
+
+    @property
+    def processing_status(self):
+        return self.latest_version.status if self.latest_version else "NOT_REGISTERED"
+
+    @property
+    def detected_type(self):
+        return self.latest_run.document_type if self.latest_run else None
+
+    @property
+    def extraction_status(self):
+        return self.latest_run.status if self.latest_run else "NOT_STARTED"
+
+    @property
+    def source_updated_at(self):
+        return self.latest_version.updated_at if self.latest_version else None
+
 
 class TradeLine(CaseRelated, Base):
     __tablename__ = "smart_trade_trade_lines"

@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     document_max_pages: int = Field(100, ge=1, le=1000)
     document_max_text_chars: int = Field(60000, ge=1000, le=200000)
     llm_timeout_seconds: int = Field(180, ge=1, le=300)
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @field_validator("database_url", "mysql_password", "llm_api_key", mode="before")
     @classmethod

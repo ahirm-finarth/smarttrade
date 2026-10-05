@@ -183,7 +183,12 @@ def test_document_api_end_to_end(context, monkeypatch):
     try:
         with TestClient(app) as client:
             file = {"file": (PDF.name, PDF.read_bytes(), "application/pdf")}
-            uploaded = client.post("/api/v1/cases/TEST-1/documents", files=file)
+            uploaded = client.post(
+                "/api/v1/cases/TEST-1/documents",
+                files=file,
+                headers={"Origin": "http://127.0.0.1:3000"},
+            )
+            assert uploaded.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
             assert uploaded.status_code == 200
             doc_id = uploaded.json()["document_id"]
             duplicate = client.post("/api/v1/cases/TEST-1/documents", files=file)
@@ -201,6 +206,8 @@ def test_document_api_end_to_end(context, monkeypatch):
             assert len(client.get(prefix + "/processing-runs").json()) == 2
             detail = client.get(prefix).json()
             assert detail["facts"][0]["page_number"] == 1
+            assert detail["facts"][0]["document_id"] == doc_id
+            assert detail["facts"][0]["document_version_id"] == detail["selected_version"]["id"]
             assert detail["pages"][0]["text_length"] > 100
             assert client.get(prefix, params={"version_id": 999}).status_code == 404
             assert client.get(prefix + "/facts", params={"run_id": 999}).status_code == 404

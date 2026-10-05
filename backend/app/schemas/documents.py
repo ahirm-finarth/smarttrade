@@ -46,6 +46,10 @@ class ProcessingRun(ReadModel):
 
 
 class Fact(ReadModel):
+    document_id: int | None = None
+    document_version_id: int | None = None
+    case_id: str | None = None
+    document_type: str | None = None
     id: int
     processing_run_pk: int
     field_name: str

@@ -77,7 +77,17 @@ def document_detail(session, document_id, version_id=None, run_id=None):
         else [],
         processing_runs=[ProcessingRun.model_validate(r) for r in runs],
         selected_run=ProcessingRun.model_validate(selected_run) if selected_run else None,
-        facts=[Fact.model_validate(f) for f in sorted(selected_run.facts, key=lambda f: f.id)]
+        facts=[
+            Fact.model_validate(f).model_copy(
+                update={
+                    "document_id": document.id,
+                    "document_version_id": version.id,
+                    "case_id": case.case_id,
+                    "document_type": selected_run.document_type,
+                }
+            )
+            for f in sorted(selected_run.facts, key=lambda f: f.id)
+        ]
         if selected_run
         else [],
     )
@@ -122,6 +132,33 @@ def source(document_id: int, session: Database, version_id: int | None = Query(N
         media_type="application/pdf",
         headers={
             "Content-Disposition": "inline; filename*=UTF-8''" + quote(version.original_filename),
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+        },
+    )
+
+
+@router.get("/documents/{document_id}/pages/{page_number}/image")
+def page_image(
+    document_id: int,
+    page_number: int,
+    session: Database,
+    version_id: int | None = Query(None, ge=1),
+):
+    import pymupdf
+
+    version = get_version(session, document_id, version_id)
+    content = read_source(get_settings(), version)
+    with pymupdf.open(stream=content, filetype="pdf") as pdf:
+        if page_number < 1 or page_number > pdf.page_count:
+            raise HTTPException(404, "Source page not found")
+        page = pdf[page_number - 1]
+        scale = min(1400 / max(page.rect.width, 1), 1800 / max(page.rect.height, 1), 2)
+        png = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes("png")
+    return Response(
+        png,
+        media_type="image/png",
+        headers={
             "X-Content-Type-Options": "nosniff",
             "Cache-Control": "private, no-store",
         },

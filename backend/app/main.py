@@ -5,16 +5,20 @@ from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.v1.cases import router
+from app.api.v1.decisions import router as decision_router
 from app.api.v1.documents import router as document_router
 from app.api.v1.examinations import router as examination_router
 from app.api.v1.risk import router as risk_router
 from app.core.config import get_settings
 from app.db.session import database_connected
+from app.integrations.llm.client import LLMUnavailable
 from app.integrations.storage.local import InvalidDocument
 from app.services.cases import CaseNotFound
+from app.services.decision_engine import DecisionNotFound
 from app.services.documents import DocumentConflict, DocumentNotFound
 from app.services.examination_engine import ExaminationNotConfigured, ExaminationNotFound
 from app.services.risk_orchestration import RiskRunNotFound
+from app.services.workflow_controls import WorkflowConflict, WorkflowForbidden
 
 
 class HealthResponse(BaseModel):
@@ -47,6 +51,30 @@ app.include_router(router)
 app.include_router(document_router)
 app.include_router(examination_router)
 app.include_router(risk_router)
+app.include_router(decision_router)
+
+
+@app.exception_handler(DecisionNotFound)
+async def decision_not_found(request, exc):
+    return JSONResponse(status_code=404, content={"detail": "Decision or workflow task not found"})
+
+
+@app.exception_handler(WorkflowForbidden)
+async def workflow_forbidden(request, exc):
+    return JSONResponse(status_code=403, content={"detail": str(exc)})
+
+
+@app.exception_handler(WorkflowConflict)
+async def workflow_conflict(request, exc):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
+@app.exception_handler(LLMUnavailable)
+async def advisory_unavailable(request, exc):
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Advisory summary unavailable; deterministic workflow is unchanged"},
+    )
 
 
 @app.exception_handler(RiskRunNotFound)

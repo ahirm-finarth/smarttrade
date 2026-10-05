@@ -75,7 +75,6 @@ test("document intake, duplicate upload, source page, and fact provenance", asyn
   let failPreview = true;
   await page.route(previewRoute, (route) => {
     if (failPreview) {
-      failPreview = false;
       return route.abort("failed");
     }
     return route.continue();
@@ -90,6 +89,7 @@ test("document intake, duplicate upload, source page, and fact provenance", asyn
   await expect(
     page.getByText("Page preview unavailable", { exact: true }),
   ).toBeVisible();
+  failPreview = false;
   await page.getByRole("button", { name: "Refresh", exact: true }).click();
   const image = page.getByRole("img", { name: /source page 1$/ });
   await expect(image).toBeVisible();

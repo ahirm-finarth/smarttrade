@@ -54,18 +54,25 @@ function HighlightedText({ text, value }: { text: string; value?: string }) {
   );
 }
 
-export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
+export function DocumentWorkspace({
+  initial,
+  initialFactId,
+}: {
+  initial: DocumentDetail;
+  initialFactId?: number;
+}) {
+  const initialFact =
+    initial.facts.find((f) => f.id === initialFactId) || initial.facts[0];
   const [data, setData] = useState(initial);
-  const [factId, setFactId] = useState<number | null>(
-    initial.facts[0]?.id ?? null,
-  );
-  const [page, setPage] = useState(initial.facts[0]?.page_number ?? 1);
+  const [factId, setFactId] = useState<number | null>(initialFact?.id ?? null);
+  const [page, setPage] = useState(initialFact?.page_number ?? 1);
   const [busy, setBusy] = useState(false);
   const [operation, setOperation] = useState<"process" | "upload" | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [imageError, setImageError] = useState(false);
   const requestSequence = useRef(0);
+  const sourceImage = useRef<HTMLImageElement | null>(null);
   const version = data.selected_version;
   const run = data.selected_run;
   const fact = data.facts.find((candidate) => candidate.id === factId) ?? null;
@@ -77,6 +84,19 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
   const processing = busy && operation === "process";
   const id = data.document.id;
   const versionId = version?.id;
+  useEffect(() => {
+    // A server-rendered image can fail before React attaches its error handler.
+    // Check the browser's settled image state after hydration as well.
+    const image = sourceImage.current;
+    let current = true;
+    queueMicrotask(() => {
+      if (current && image?.complete && image.naturalWidth === 0)
+        setImageError(true);
+    });
+    return () => {
+      current = false;
+    };
+  }, [versionId, page, imageError]);
   const refresh = useCallback(
     async (
       selectedVersion?: number,
@@ -361,6 +381,7 @@ export function DocumentWorkspace({ initial }: { initial: DocumentDetail }) {
                 // Native page rendering preserves the original layout without a PDF-viewer dependency.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  ref={sourceImage}
                   key={`${version.id}-${page}`}
                   src={documentPageURL(id, version.id, page)}
                   alt={`${version.original_filename}, source page ${page}`}

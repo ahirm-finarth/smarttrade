@@ -1,5 +1,5 @@
 "use client";
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   ArrowRight,
   FileText,
@@ -9,6 +9,7 @@ import {
   History,
   Rows3,
 } from "lucide-react";
+import { RiskWorkspace } from "@/components/risk-workspace";
 import { ExaminationWorkspace } from "@/components/examination-workspace";
 import { DocumentInventory } from "@/components/document-inventory";
 import { DataTable, SectionHeading, supplied } from "@/components/ui";
@@ -20,6 +21,7 @@ const tabs = [
   { id: "parties", label: "Parties" },
   { id: "documents", label: "Documents" },
   { id: "examination", label: "Examination" },
+  { id: "risk_compliance", label: "Risk & Compliance" },
   { id: "trade_lines", label: "Trade lines" },
   { id: "discrepancies", label: "Reference findings" },
   { id: "risk_events", label: "Reference risks" },
@@ -32,9 +34,22 @@ export function CaseWorkspace({
   initialTab = "overview",
 }: {
   tradeCase: CaseDetail;
-  initialTab?: "overview" | "documents" | "examination";
+  initialTab?: "overview" | "documents" | "examination" | "risk_compliance";
 }) {
   const [active, setActive] = useState<Tab>(initialTab);
+  const tabStrip = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const strip = tabStrip.current;
+    const selected = strip?.querySelector<HTMLButtonElement>(
+      '[aria-selected="true"]',
+    );
+    if (!strip || !selected) return;
+    const bounds = strip.getBoundingClientRect();
+    const tab = selected.getBoundingClientRect();
+    if (tab.left < bounds.left) strip.scrollLeft += tab.left - bounds.left;
+    else if (tab.right > bounds.right)
+      strip.scrollLeft += tab.right - bounds.right;
+  }, [active]);
   const inventory = [
     {
       id: "parties",
@@ -90,7 +105,12 @@ export function CaseWorkspace({
   }
   return (
     <section className="workspace" aria-label="Trade case workspace">
-      <div className="workspace-tabs" role="tablist" aria-label="Case sections">
+      <div
+        ref={tabStrip}
+        className="workspace-tabs"
+        role="tablist"
+        aria-label="Case sections"
+      >
         {tabs.map((tab, index) => (
           <button
             key={tab.id}
@@ -103,9 +123,11 @@ export function CaseWorkspace({
             onKeyDown={(event) => keyboard(event, index)}
           >
             {tab.label}
-            {tab.id !== "overview" && tab.id !== "examination" && (
-              <span>{data[tab.id].length}</span>
-            )}
+            {tab.id !== "overview" &&
+              tab.id !== "examination" &&
+              tab.id !== "risk_compliance" && (
+                <span>{data[tab.id].length}</span>
+              )}
           </button>
         ))}
       </div>
@@ -214,6 +236,12 @@ export function CaseWorkspace({
             <ExaminationWorkspace
               caseId={data.case_id}
               active={active === "examination"}
+            />
+          )}
+          {tab.id === "risk_compliance" && (
+            <RiskWorkspace
+              caseId={data.case_id}
+              active={active === "risk_compliance"}
             />
           )}
           {tab.id === "trade_lines" && (

@@ -163,3 +163,43 @@ export async function runExamination(caseId: string, requestId: string) {
     import("@/types/examinations").ExaminationDetail
   >;
 }
+
+export const getRiskRuns = (caseId: string) =>
+  getJSON<import("@/types/risk").RiskRun[]>(
+    `/api/v1/cases/${encodeURIComponent(caseId)}/risk-runs`,
+  );
+export const getRiskRun = (runId: number) =>
+  getJSON<import("@/types/risk").RiskDetail>(`/api/v1/risk-runs/${runId}`);
+export async function runRiskChecks(caseId: string, requestId: string) {
+  let response: Response;
+  try {
+    response = await fetch(
+      `${baseURL}/api/v1/cases/${encodeURIComponent(caseId)}/risk-runs`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ request_id: requestId }),
+        signal: AbortSignal.timeout(90000),
+      },
+    );
+  } catch {
+    throw new Error(
+      "Connection interrupted. Refresh risk history before retrying.",
+    );
+  }
+  if (!response.ok) {
+    const errors: Record<number, string> = {
+      404: "Case not found. Return to the register.",
+      409: "Risk checks are already running. Refresh history.",
+      503: "Risk storage is temporarily unavailable. Refresh and try again.",
+    };
+    throw new Error(
+      errors[response.status] ||
+        "Risk checks could not run. Refresh history and try again.",
+    );
+  }
+  return response.json() as Promise<import("@/types/risk").RiskDetail>;
+}

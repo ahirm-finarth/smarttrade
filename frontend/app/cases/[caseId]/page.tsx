@@ -76,7 +76,11 @@ export default async function CasePage({
       <CaseWorkspace
         tradeCase={tradeCase}
         initialTab={
-          tab === "documents" || tab === "examination" ? tab : "overview"
+          tab === "documents" ||
+          tab === "examination" ||
+          tab === "risk_compliance"
+            ? tab
+            : "overview"
         }
       />
     </div>

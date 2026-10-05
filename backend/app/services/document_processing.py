@@ -22,6 +22,7 @@ from app.services.document_extraction import (
     DOCUMENT_EXTRACTION_PROMPT_VERSION,
     build_raw_facts,
     extract_document,
+    printed_field_omissions,
 )
 from app.services.documents import DocumentConflict, get_version, read_source
 from app.services.evidence import normalize_and_validate
@@ -145,12 +146,19 @@ def process_document(
                 for f in facts
                 if f.evidence_status == "NEEDS_REVIEW"
             ]
+            omissions = printed_field_omissions(extracted, parsed)
+            feedback.extend(
+                f"{field}: a unique field label is printed in the supplied pages; "
+                "extract its actual value and quotation, or retain null if ambiguous"
+                for field in omissions
+            )
             if not feedback:
                 break
         run.metadata_json = {
             **run.metadata_json,
             "extraction_attempts": _attempt + 1,
             "evidence_reconciliation": reconciliations,
+            "printed_field_omissions": omissions,
         }
         session.add_all(facts)
         session.flush()

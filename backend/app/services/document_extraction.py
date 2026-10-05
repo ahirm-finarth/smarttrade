@@ -5,10 +5,34 @@ from sqlalchemy.orm import Session
 from app.integrations.llm.client import LLMClient
 from app.integrations.pdf.parser import ParsedPDF
 from app.models.documents import DocumentProcessingRun, ExtractedFact
-from app.schemas.intelligence import StrictOutput, extraction_schema
+from app.schemas.intelligence import SOURCE_LABELS, StrictOutput, extraction_schema
 from app.services.document_classifier import source_payload
 
-DOCUMENT_EXTRACTION_PROMPT_VERSION = "extraction-v2"
+DOCUMENT_EXTRACTION_PROMPT_VERSION = "extraction-v3"
+
+
+def printed_field_omissions(extraction: StrictOutput, parsed: ParsedPDF) -> list[str]:
+    """Request a bounded model retry for an omitted, uniquely printed field label.
+
+    This supplies feedback, never facts. The model must return its own validated,
+    source-backed result. No reference files or case-specific values are consulted.
+    """
+    omissions = []
+    for field, value in extraction.fields:
+        if value is not None:
+            continue
+        label = SOURCE_LABELS.get(field, field.replace("_", " ")).casefold()
+        rows = []
+        for page in parsed.pages:
+            lines = page.text.splitlines()
+            rows.extend(
+                (page.page_number, lines[index + 1].strip())
+                for index, line in enumerate(lines[:-1])
+                if " ".join(line.casefold().split()) == label
+            )
+        if len(rows) == 1 and rows[0][1]:
+            omissions.append(field)
+    return omissions
 
 
 def extract_document(

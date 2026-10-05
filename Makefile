@@ -75,3 +75,10 @@ examine-demo-cases:
 
 evaluate-demo-examination:
 	$(PY) -m app.scripts.evaluate_demo_examination --output reports/local/phase3-evaluation.json
+
+.PHONY: run-demo-risk evaluate-demo-risk
+run-demo-risk:
+	$(PY) -m app.scripts.run_demo_risk
+
+evaluate-demo-risk:
+	$(PY) -m app.scripts.evaluate_demo_risk --output reports/local/phase4-risk-evaluation.json

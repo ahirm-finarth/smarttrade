@@ -68,3 +68,10 @@ process-demo-documents:
 
 evaluate-demo-extraction:
 	$(PY) -m app.scripts.evaluate_demo_extraction --output reports/local/phase2-evaluation.json
+
+.PHONY: examine-demo-cases evaluate-demo-examination
+examine-demo-cases:
+	$(PY) -m app.scripts.examine_demo_cases
+
+evaluate-demo-examination:
+	$(PY) -m app.scripts.evaluate_demo_examination --output reports/local/phase3-evaluation.json

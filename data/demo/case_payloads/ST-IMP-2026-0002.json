@@ -1,0 +1,207 @@
+{
+  "case": {
+    "case_id": "ST-IMP-2026-0002",
+    "scenario": "Import LC risk referral",
+    "product_playbook": "Import LC",
+    "direction": "Import",
+    "applicant": "Orchid BioPack Limited",
+    "beneficiary": "Vesper Commodities FZE",
+    "currency": "USD",
+    "amount": 120000.0,
+    "status": "Held for trade compliance",
+    "expected_decision": "REFER",
+    "demo_narrative": "Invoice, quantity and route exceptions; possible duplicate-financing and vessel/port policy alerts."
+  },
+  "parties": [
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "party_role": "Applicant",
+      "party_name": "Orchid BioPack Limited",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "party_role": "Beneficiary",
+      "party_name": "Vesper Commodities FZE",
+      "country": "AE",
+      "screening_status": "REVIEW"
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "party_role": "Vessel",
+      "party_name": "MV Meridian Halo",
+      "country": "PA",
+      "screening_status": "REVIEW"
+    }
+  ],
+  "documents": [
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "document_id": "DOC-0011",
+      "document_type": "LC advice",
+      "reference": "LC-IM-260204",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "LC_Advice_ST-IMP-2026-0002.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "document_id": "DOC-0012",
+      "document_type": "Commercial invoice",
+      "reference": "INV-OB-260204",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Commercial_Invoice_INV-OB-260204.pdf",
+      "extraction_confidence": 0.98
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "document_id": "DOC-0013",
+      "document_type": "Packing list",
+      "reference": "PL-OB-260204",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Packing_List_PL-OB-260204.pdf",
+      "extraction_confidence": 0.96
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "document_id": "DOC-0014",
+      "document_type": "Bill of lading",
+      "reference": "BL-OB-260204",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Bill_of_Lading_BL-OB-260204.pdf",
+      "extraction_confidence": 0.97
+    }
+  ],
+  "trade_lines": [
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "source": "LC",
+      "item_no": 1,
+      "goods_description": "Bio-polymer packaging resin",
+      "quantity": 100,
+      "uom": "MT",
+      "unit_price": 1200.0,
+      "currency": "USD",
+      "line_amount": 120000.0
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "source": "Invoice",
+      "item_no": 1,
+      "goods_description": "Bio-polymer packaging resin",
+      "quantity": 105,
+      "uom": "MT",
+      "unit_price": 1200.0,
+      "currency": "USD",
+      "line_amount": 126000.0
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "source": "Packing list",
+      "item_no": 1,
+      "goods_description": "Bio-polymer packaging resin",
+      "quantity": 105,
+      "uom": "MT",
+      "unit_price": 1200.0,
+      "currency": "USD",
+      "line_amount": 126000.0
+    }
+  ],
+  "discrepancies": [
+    {
+      "finding_id": "DISC-0001",
+      "case_id": "ST-IMP-2026-0002",
+      "severity": "HIGH",
+      "rule_id": "LC-AMOUNT-001",
+      "category": "LC term mismatch",
+      "field": "Invoice amount",
+      "expected_value": "USD 120,000.00",
+      "observed_value": "USD 126,000.00",
+      "evidence": "Commercial invoice, page 1, total amount; LC advice, page 1, credit amount",
+      "route_to": "Trade Compliance",
+      "status": "OPEN"
+    },
+    {
+      "finding_id": "DISC-0002",
+      "case_id": "ST-IMP-2026-0002",
+      "severity": "HIGH",
+      "rule_id": "LC-QTY-001",
+      "category": "Cross-document mismatch",
+      "field": "Quantity",
+      "expected_value": "100 MT",
+      "observed_value": "105 MT",
+      "evidence": "LC advice, page 1; packing list, page 1",
+      "route_to": "Trade Compliance",
+      "status": "OPEN"
+    },
+    {
+      "finding_id": "DISC-0003",
+      "case_id": "ST-IMP-2026-0002",
+      "severity": "MEDIUM",
+      "rule_id": "DOC-INV-REF-001",
+      "category": "Duplicate-invoice candidate",
+      "field": "Invoice fingerprint",
+      "expected_value": "Unique invoice/financing record",
+      "observed_value": "Matches historical synthetic invoice fingerprint HIST-INV-OB-2025-889",
+      "evidence": "Invoice header, page 1; prior transaction reference",
+      "route_to": "Trade Risk",
+      "status": "OPEN"
+    }
+  ],
+  "risk_events": [
+    {
+      "risk_id": "RISK-0002",
+      "case_id": "ST-IMP-2026-0002",
+      "risk_type": "Country/port policy",
+      "subject": "Port Azure",
+      "provider": "DemoTradePolicy",
+      "result": "REFER",
+      "severity": "HIGH",
+      "reason": "Configured enhanced due diligence route"
+    },
+    {
+      "risk_id": "RISK-0003",
+      "case_id": "ST-IMP-2026-0002",
+      "risk_type": "Vessel screening",
+      "subject": "MV Meridian Halo",
+      "provider": "DemoVessel",
+      "result": "REFER",
+      "severity": "MEDIUM",
+      "reason": "Synthetic adverse-route alert requires analyst validation"
+    },
+    {
+      "risk_id": "RISK-0004",
+      "case_id": "ST-IMP-2026-0002",
+      "risk_type": "Fair value",
+      "subject": "Bio-polymer packaging resin",
+      "provider": "DemoPriceIndex",
+      "result": "REFER",
+      "severity": "MEDIUM",
+      "reason": "Invoice unit price exceeds demo tolerance after normalisation"
+    }
+  ],
+  "approval_events": [
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "event_time": "2026-02-21T10:02:00+05:30",
+      "actor_role": "Trade Maker",
+      "actor_id": "demo-maker-02",
+      "action": "Raised document and risk exceptions",
+      "outcome": "REFERRED"
+    },
+    {
+      "case_id": "ST-IMP-2026-0002",
+      "event_time": "2026-02-21T10:09:00+05:30",
+      "actor_role": "Trade Compliance",
+      "actor_id": "demo-compliance-01",
+      "action": "Opened enhanced review work item",
+      "outcome": "PENDING"
+    }
+  ],
+  "synthetic_data_notice": "All content is fictional and generated for a FinArth Smart Trade demonstration. Do not use for financial, legal, payment, sanctions, or regulatory decisions."
+}

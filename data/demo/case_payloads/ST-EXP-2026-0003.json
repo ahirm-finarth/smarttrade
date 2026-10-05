@@ -1,0 +1,148 @@
+{
+  "case": {
+    "case_id": "ST-EXP-2026-0003",
+    "scenario": "Export LC documentary discrepancy",
+    "product_playbook": "Export LC",
+    "direction": "Export",
+    "applicant": "Mistral Textiles India Private Limited",
+    "beneficiary": "Albatross Home GmbH",
+    "currency": "EUR",
+    "amount": 73500.0,
+    "status": "Awaiting exporter waiver instruction",
+    "expected_decision": "REFER",
+    "demo_narrative": "Late shipment and purchase-order mismatch; export-bill follow-up record opened."
+  },
+  "parties": [
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "party_role": "Exporter",
+      "party_name": "Mistral Textiles India Private Limited",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "party_role": "Buyer",
+      "party_name": "Albatross Home GmbH",
+      "country": "DE",
+      "screening_status": "CLEAR"
+    }
+  ],
+  "documents": [
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "document_id": "DOC-0021",
+      "document_type": "Export LC",
+      "reference": "LC-EX-260307",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Export_LC_ST-EXP-2026-0003.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "document_id": "DOC-0022",
+      "document_type": "Commercial invoice",
+      "reference": "INV-MT-260318",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Commercial_Invoice_INV-MT-260318.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "document_id": "DOC-0023",
+      "document_type": "Bill of lading",
+      "reference": "BL-MT-260318",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Bill_of_Lading_BL-MT-260318.pdf",
+      "extraction_confidence": 0.97
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "document_id": "DOC-0024",
+      "document_type": "Certificate of origin",
+      "reference": "COO-MT-260318",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Certificate_of_Origin_COO-MT-260318.pdf",
+      "extraction_confidence": 0.97
+    }
+  ],
+  "trade_lines": [
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "source": "LC",
+      "item_no": 1,
+      "goods_description": "Organic cotton bed linen sets",
+      "quantity": 3500,
+      "uom": "SET",
+      "unit_price": 21.0,
+      "currency": "EUR",
+      "line_amount": 73500.0
+    },
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "source": "Invoice",
+      "item_no": 1,
+      "goods_description": "Organic cotton bed linen sets",
+      "quantity": 3500,
+      "uom": "SET",
+      "unit_price": 21.0,
+      "currency": "EUR",
+      "line_amount": 73500.0
+    }
+  ],
+  "discrepancies": [
+    {
+      "finding_id": "DISC-0004",
+      "case_id": "ST-EXP-2026-0003",
+      "severity": "HIGH",
+      "rule_id": "LC-SHIP-DATE-001",
+      "category": "Late shipment",
+      "field": "On-board date",
+      "expected_value": "On or before 2026-03-15",
+      "observed_value": "2026-03-18",
+      "evidence": "Export LC, page 1; bill of lading, page 1",
+      "route_to": "Trade Operations",
+      "status": "OPEN"
+    },
+    {
+      "finding_id": "DISC-0005",
+      "case_id": "ST-EXP-2026-0003",
+      "severity": "MEDIUM",
+      "rule_id": "LC-PO-REF-001",
+      "category": "Reference mismatch",
+      "field": "Purchase order",
+      "expected_value": "PO-45078",
+      "observed_value": "PO-45087",
+      "evidence": "Export LC, page 1; commercial invoice, page 1",
+      "route_to": "Trade Operations",
+      "status": "OPEN"
+    }
+  ],
+  "risk_events": [
+    {
+      "risk_id": "RISK-0005",
+      "case_id": "ST-EXP-2026-0003",
+      "risk_type": "Export realisation watch",
+      "subject": "Export bill ST-EXP-2026-0003",
+      "provider": "Smart Trade Watchlist",
+      "result": "MONITOR",
+      "severity": "LOW",
+      "reason": "Case remains open pending discrepancy/waiver decision"
+    }
+  ],
+  "approval_events": [
+    {
+      "case_id": "ST-EXP-2026-0003",
+      "event_time": "2026-03-19T12:30:00+05:30",
+      "actor_role": "Export Maker",
+      "actor_id": "demo-export-01",
+      "action": "Logged LC presentation discrepancies",
+      "outcome": "REFERRED"
+    }
+  ],
+  "synthetic_data_notice": "All content is fictional and generated for a FinArth Smart Trade demonstration. Do not use for financial, legal, payment, sanctions, or regulatory decisions."
+}

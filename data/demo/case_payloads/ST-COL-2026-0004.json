@@ -1,0 +1,89 @@
+{
+  "case": {
+    "case_id": "ST-COL-2026-0004",
+    "scenario": "Documentary collection acceptance",
+    "product_playbook": "Documentary Collection D/A",
+    "direction": "Export",
+    "applicant": "Cedar Foods Exports Private Limited",
+    "beneficiary": "Rivermark Grocers LLC",
+    "currency": "USD",
+    "amount": 42500.0,
+    "status": "Accepted; maturity monitoring",
+    "expected_decision": "PASS",
+    "demo_narrative": "Documents released only on acceptance; maturity and payment follow-up scheduled."
+  },
+  "parties": [
+    {
+      "case_id": "ST-COL-2026-0004",
+      "party_role": "Drawer",
+      "party_name": "Cedar Foods Exports Private Limited",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "party_role": "Drawee",
+      "party_name": "Rivermark Grocers LLC",
+      "country": "OM",
+      "screening_status": "CLEAR"
+    }
+  ],
+  "documents": [
+    {
+      "case_id": "ST-COL-2026-0004",
+      "document_id": "DOC-0031",
+      "document_type": "Collection instruction",
+      "reference": "COL-CE-260401",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Collection_Instruction_ST-COL-2026-0004.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "document_id": "DOC-0032",
+      "document_type": "Commercial invoice",
+      "reference": "INV-CE-260401",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Commercial_Invoice_INV-CE-260401.pdf",
+      "extraction_confidence": 0.98
+    },
+    {
+      "case_id": "ST-COL-2026-0004",
+      "document_id": "DOC-0033",
+      "document_type": "Bill of exchange",
+      "reference": "BOE-CE-260401",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Bill_of_Exchange_BOE-CE-260401.pdf",
+      "extraction_confidence": 0.97
+    }
+  ],
+  "trade_lines": [
+    {
+      "case_id": "ST-COL-2026-0004",
+      "source": "Invoice",
+      "item_no": 1,
+      "goods_description": "Dehydrated mango slices",
+      "quantity": 8500,
+      "uom": "KG",
+      "unit_price": 5.0,
+      "currency": "USD",
+      "line_amount": 42500.0
+    }
+  ],
+  "discrepancies": [],
+  "risk_events": [],
+  "approval_events": [
+    {
+      "case_id": "ST-COL-2026-0004",
+      "event_time": "2026-04-03T15:05:00+05:30",
+      "actor_role": "Collections Maker",
+      "actor_id": "demo-collection-01",
+      "action": "Recorded drawee acceptance",
+      "outcome": "APPROVED"
+    }
+  ],
+  "synthetic_data_notice": "All content is fictional and generated for a FinArth Smart Trade demonstration. Do not use for financial, legal, payment, sanctions, or regulatory decisions."
+}

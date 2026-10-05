@@ -1,0 +1,114 @@
+{
+  "case": {
+    "case_id": "ST-BG-2026-0005",
+    "scenario": "Performance guarantee demand review",
+    "product_playbook": "Performance Guarantee",
+    "direction": "Outward",
+    "applicant": "Helix Infraworks Limited",
+    "beneficiary": "Saffron Metro Development Corporation",
+    "currency": "INR",
+    "amount": 25000000.0,
+    "status": "Legal and trade review required",
+    "expected_decision": "REFER",
+    "demo_narrative": "Demand received before expiry but lacks the required contractual breach statement."
+  },
+  "parties": [
+    {
+      "case_id": "ST-BG-2026-0005",
+      "party_role": "Applicant",
+      "party_name": "Helix Infraworks Limited",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "party_role": "Beneficiary",
+      "party_name": "Saffron Metro Development Corporation",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    }
+  ],
+  "documents": [
+    {
+      "case_id": "ST-BG-2026-0005",
+      "document_id": "DOC-0041",
+      "document_type": "Guarantee summary",
+      "reference": "PG-260501",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Guarantee_Summary_ST-BG-2026-0005.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "document_id": "DOC-0042",
+      "document_type": "Demand letter",
+      "reference": "DM-260620",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Demand_Letter_DM-260620.pdf",
+      "extraction_confidence": 0.98
+    },
+    {
+      "case_id": "ST-BG-2026-0005",
+      "document_id": "DOC-0043",
+      "document_type": "Underlying contract extract",
+      "reference": "CON-HI-260115",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Contract_Extract_CON-HI-260115.pdf",
+      "extraction_confidence": 0.96
+    }
+  ],
+  "trade_lines": [
+    {
+      "case_id": "ST-BG-2026-0005",
+      "source": "Guarantee",
+      "item_no": 1,
+      "goods_description": "Metro platform civil works performance guarantee",
+      "quantity": 1,
+      "uom": "LOT",
+      "unit_price": 25000000.0,
+      "currency": "INR",
+      "line_amount": 25000000.0
+    }
+  ],
+  "discrepancies": [
+    {
+      "finding_id": "DISC-0006",
+      "case_id": "ST-BG-2026-0005",
+      "severity": "HIGH",
+      "rule_id": "BG-DEMAND-STATEMENT-001",
+      "category": "Non-complying demand",
+      "field": "Required breach statement",
+      "expected_value": "Signed statement of breach required",
+      "observed_value": "No breach statement in submitted demand letter",
+      "evidence": "Guarantee summary, page 1; demand letter, page 1",
+      "route_to": "Trade Legal",
+      "status": "OPEN"
+    }
+  ],
+  "risk_events": [
+    {
+      "risk_id": "RISK-0006",
+      "case_id": "ST-BG-2026-0005",
+      "risk_type": "Guarantee demand compliance",
+      "subject": "Demand DM-260620",
+      "provider": "Smart Trade Rules",
+      "result": "REFER",
+      "severity": "HIGH",
+      "reason": "Required breach statement absent"
+    }
+  ],
+  "approval_events": [
+    {
+      "case_id": "ST-BG-2026-0005",
+      "event_time": "2026-06-20T11:14:00+05:30",
+      "actor_role": "Guarantee Maker",
+      "actor_id": "demo-guarantee-01",
+      "action": "Logged demand and sent to legal review",
+      "outcome": "REFERRED"
+    }
+  ],
+  "synthetic_data_notice": "All content is fictional and generated for a FinArth Smart Trade demonstration. Do not use for financial, legal, payment, sanctions, or regulatory decisions."
+}

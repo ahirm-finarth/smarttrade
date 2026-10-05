@@ -1,0 +1,136 @@
+{
+  "case": {
+    "case_id": "ST-IMP-2026-0001",
+    "scenario": "Clean import LC presentation",
+    "product_playbook": "Import LC",
+    "direction": "Import",
+    "applicant": "Asteron Engineering Private Limited",
+    "beneficiary": "Nordhavn Tools A/S",
+    "currency": "USD",
+    "amount": 85000.0,
+    "status": "Ready for checker approval",
+    "expected_decision": "PASS",
+    "demo_narrative": "Complete document packet; all field, screening and policy controls clear."
+  },
+  "parties": [
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "party_role": "Applicant",
+      "party_name": "Asteron Engineering Private Limited",
+      "country": "IN",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "party_role": "Beneficiary",
+      "party_name": "Nordhavn Tools A/S",
+      "country": "DK",
+      "screening_status": "CLEAR"
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "party_role": "Vessel",
+      "party_name": "MV Lumen Star",
+      "country": "PA",
+      "screening_status": "CLEAR"
+    }
+  ],
+  "documents": [
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "document_id": "DOC-0001",
+      "document_type": "LC advice",
+      "reference": "LC-IM-260101",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "LC_Advice_ST-IMP-2026-0001.pdf",
+      "extraction_confidence": 0.99
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "document_id": "DOC-0002",
+      "document_type": "Commercial invoice",
+      "reference": "INV-NT-260101",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Commercial_Invoice_INV-NT-260101.pdf",
+      "extraction_confidence": 0.98
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "document_id": "DOC-0003",
+      "document_type": "Packing list",
+      "reference": "PL-NT-260101",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Packing_List_PL-NT-260101.pdf",
+      "extraction_confidence": 0.98
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "document_id": "DOC-0004",
+      "document_type": "Bill of lading",
+      "reference": "BL-NT-260101",
+      "expected": "Y",
+      "received": "Y",
+      "file_name": "Bill_of_Lading_BL-NT-260101.pdf",
+      "extraction_confidence": 0.97
+    }
+  ],
+  "trade_lines": [
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "source": "LC",
+      "item_no": 1,
+      "goods_description": "CNC spindle bearings",
+      "quantity": 50,
+      "uom": "EA",
+      "unit_price": 1700.0,
+      "currency": "USD",
+      "line_amount": 85000.0
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "source": "Invoice",
+      "item_no": 1,
+      "goods_description": "CNC spindle bearings",
+      "quantity": 50,
+      "uom": "EA",
+      "unit_price": 1700.0,
+      "currency": "USD",
+      "line_amount": 85000.0
+    }
+  ],
+  "discrepancies": [],
+  "risk_events": [
+    {
+      "risk_id": "RISK-0001",
+      "case_id": "ST-IMP-2026-0001",
+      "risk_type": "Sanctions screening",
+      "subject": "All parties and vessel",
+      "provider": "DemoScreen",
+      "result": "CLEAR",
+      "severity": "INFO",
+      "reason": "No synthetic list match"
+    }
+  ],
+  "approval_events": [
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "event_time": "2026-02-18T09:14:00+05:30",
+      "actor_role": "Trade Maker",
+      "actor_id": "demo-maker-01",
+      "action": "Verified extraction and documentary checks",
+      "outcome": "APPROVED"
+    },
+    {
+      "case_id": "ST-IMP-2026-0001",
+      "event_time": "2026-02-18T09:27:00+05:30",
+      "actor_role": "Trade Checker",
+      "actor_id": "demo-checker-01",
+      "action": "Approved payment readiness",
+      "outcome": "APPROVED"
+    }
+  ],
+  "synthetic_data_notice": "All content is fictional and generated for a FinArth Smart Trade demonstration. Do not use for financial, legal, payment, sanctions, or regulatory decisions."
+}

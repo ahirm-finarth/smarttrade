@@ -1,17 +1,17 @@
 # FinArth Smart Trade
 
-Phase 2 extends the Phase 1 case register with **document intake, PDF intelligence, and source provenance**. FastAPI persists originals, pages, processing runs, and extracted facts in the existing MySQL-backed architecture. Next.js displays the source PDF alongside individual extracted fields. Processing uses actual PDF content; CSV/XLSX/JSON labels are evaluation inputs only.
+Phase 3 adds **deterministic documentary examination and a relational evidence graph** to the Phase 2 source-PDF workbench. Current extracted facts and versioned rules produce supported cross-document findings, with both original sources, immutable history and explicit incomplete states. Runtime examination never reads labelled references or calls the LLM.
 
-**Synthetic Demo Data:** all supplied fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected PASS / REFER / BLOCK outcomes, findings, screening signals, and approval events remain supplied references. The application does not compute trade decisions or cross-document checks.
+**Synthetic Demo Data:** supplied fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected PASS / REFER / BLOCK outcomes, reference findings/risks and approval events remain supplied references. Documentary examination is calculated separately and is not a final trade decision.
 
-Phase 2 is on [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2). The original foundation remains on [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1).
+Phase 3 is on [`phase-3`](https://github.com/ahirm-finarth/smarttrade/tree/phase-3), based on validated [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2). The foundation remains on [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1). See [architecture](docs/PHASE3_ARCHITECTURE.md) and [actual Phase 3 validation](docs/PHASE3_VALIDATION.md).
 
 ## Native setup
 
 Use Python 3.12+, uv, Node.js 20.9+ (verified with Node 22), npm, and the existing external MySQL 8-compatible database. No Docker or additional database service is used.
 
 ```sh
-git clone --branch phase-2 https://github.com/ahirm-finarth/smarttrade.git
+git clone --branch phase-3 https://github.com/ahirm-finarth/smarttrade.git
 cd smarttrade
 make setup
 # Only if no credential file already exists:
@@ -39,6 +39,7 @@ Backend settings read the ignored root `.env`; matching environment variables ta
 | Document model | `LLM_API_URL`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_PROTOCOL` |
 | Local originals | `DOCUMENT_STORAGE_ROOT` (default `./storage`, relative to the repository root) |
 | Intake limits | `DOCUMENT_MAX_BYTES=20971520`, `DOCUMENT_MAX_PAGES=100` |
+| Examination confidence floor | `EXAMINATION_MIN_CONFIDENCE=0.85` (classification and fact confidence; no tuning to labels) |
 | Model input bound | `DOCUMENT_MAX_TEXT_CHARS=60000` |
 | Per-call timeout | `LLM_TIMEOUT_SECONDS=180` |
 | Browser access | `CORS_ORIGINS` JSON array; both localhost and 127.0.0.1 on port 3000 by default |
@@ -62,7 +63,7 @@ make frontend
 ```
 
 - Dashboard: http://localhost:3000/
-- Case workspace: `/cases/{case_id}`; select **Documents**.
+- Case workspace: `/cases/{case_id}`; select **Documents** or **Examination**.
 - Document workspace: `/documents/{document_id}` (the internal numeric inventory ID).
 - Backend health: http://localhost:8000/health
 - API documentation: http://localhost:8000/docs
@@ -142,7 +143,7 @@ Evaluation covers document type/reference and unambiguous document-specific mone
 
 ```sh
 make test          # Isolated tests; no live model calls; MySQL checks skipped
-make test-mysql    # Also validates external MySQL, migration, and Phase 1 seed regression
+make test-mysql    # External MySQL schema, persisted evidence routes and seed regression
 make lint
 make typecheck
 make build
@@ -189,4 +190,34 @@ docs/                             Phase 1 and Phase 2 evidence
 
 ## Deferred scope
 
-Phase 3 owns evidence graphs, cross-document checks, LC/invoice/BL comparisons, discrepancies, UCP/ISBP rules, duplicate-invoice business logic, sanctions/vessel/country/price checks, risk orchestration, computed PASS / REFER / BLOCK outcomes, maker/checker workflows, Smart Insights, SWIFT, and core trade posting. OCR/vision, cloud storage, distributed processing, richer multi-line schemas, and production access controls also require later infrastructure work. Phase 2 deliberately stops at individual-document intelligence and traceable source facts.
+Phase 3 stops at deterministic documentary comparisons, supported discrepancies and relational source evidence. Phase 4 or later owns UCP/ISBP regulatory inference, duplicate invoice/financing, sanctions/vessel/country/port/price checks, facility/credit checks, risk orchestration, final PASS / REFER / BLOCK outcomes, maker/checker actions, RAG/embeddings/vector retrieval, Smart Insights, SWIFT, core trade and payments. OCR/vision, cloud storage, distributed processing, richer multi-line schemas and production access controls require later infrastructure work.
+
+## Phase 3 examination
+
+After explicitly processing the actual originals, select **Examination** and **Run examination**. Review findings and all rule results; select **View evidence** to see expected/governing and observed facts, their raw/normalized values, quotes, page, confidence, rule ID/version and comparison result. Source links open the exact historical document version/run/fact. Expand **Evidence relations** and **Current extracted facts** for the underlying ledgers.
+
+**Rerun examination** creates a new stored run. History selection keeps old results intact. Changed source facts/rules/threshold show a stale-input notice. Missing or low-confidence evidence stays incomplete; it does not create a business mismatch. A failed connection should be followed by **Refresh history** before retrying; retries use the same request UUID to avoid duplicating uncertain submissions.
+
+```sh
+make examine-demo-cases             # Deterministic DB facts/rules only; new stored runs
+make evaluate-demo-examination     # Offline labels; local JSON and Markdown reports
+# Or examine one operational case:
+backend/.venv/bin/python -m app.scripts.examine_demo_cases --case-id ST-EXP-2026-0003
+```
+
+Examination routes:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| POST | `/api/v1/cases/{case_id}/examinations` | Run; optional JSON `request_id` UUID for submission deduplication |
+| GET | `/api/v1/cases/{case_id}/examinations` | Stored history |
+| GET | `/api/v1/cases/{case_id}/examinations/latest` | Latest stored detail |
+| GET | `/api/v1/examinations/{run_id}` | Immutable detail plus current-input flag |
+| GET | `/api/v1/examinations/{run_id}/rule-executions` | Full rule results and two resolved inputs |
+| GET | `/api/v1/examinations/{run_id}/findings` | Calculated supported documentary findings |
+| GET | `/api/v1/cases/{case_id}/evidence-relations` | Latest or `run_id`-selected relations |
+| GET | `/api/v1/cases/{case_id}/extracted-facts` | Latest source/run facts, provenance and threshold |
+
+Ruleset `documentary-v1`: 41 unique definitions; Import LC 16, Export LC 14, Collection D/A 10, Guarantee 9 applicable rules. Four additive MySQL tables store examinations, executions, relations and calculated findings separately from the original reference inventory. No graph database or new infrastructure is required.
+
+Live validation detected four of five documentary reference families (five raw findings); guarantee demand classification confidence 0.72 falls below 0.85, leaving six guarantee comparisons for review. Precision 1.0000, recall 0.8000, F1 0.8889 on this small synthetic set. The packing-list reference extraction miss remains unchanged. This is not a production accuracy or final-decision claim.

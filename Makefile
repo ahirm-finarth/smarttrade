@@ -82,3 +82,13 @@ run-demo-risk:
 
 evaluate-demo-risk:
 	$(PY) -m app.scripts.evaluate_demo_risk --output reports/local/phase4-risk-evaluation.json
+
+.PHONY: run-demo-decisions run-demo-workflows evaluate-demo-decisions
+run-demo-decisions:
+	$(PY) -m app.scripts.run_demo_decisions
+
+run-demo-workflows:
+	$(PY) -m app.scripts.run_demo_workflows --output reports/local/phase5-workflows.json
+
+evaluate-demo-decisions:
+	$(PY) -m app.scripts.evaluate_demo_decisions --output reports/local/phase5-decision-evaluation.json

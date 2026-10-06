@@ -191,3 +191,48 @@ def test_mysql_risk_schema_and_persisted_provider_evidence_routes():
                 ]
                 == "NOT_CHECKED"
             )
+
+
+def test_mysql_governed_decision_schema_and_read_only_case_routes():
+    from app.models.decision import DecisionRun
+    from app.services.decision_engine import latest_source
+
+    engine = get_engine()
+    inspector = inspect(engine)
+    for name in (
+        "smart_trade_decision_runs",
+        "smart_trade_decision_reasons",
+        "smart_trade_governed_workflows",
+        "smart_trade_workflow_tasks",
+        "smart_trade_workflow_events",
+        "smart_trade_decision_overrides",
+        "smart_trade_finding_resolutions",
+    ):
+        assert name in inspector.get_table_names()
+        assert inspector.get_foreign_keys(name) and inspector.get_indexes(name)
+    with Session(engine) as session, TestClient(app) as client:
+        for case in session.scalars(select(TradeCase).where(TradeCase.dataset_key == DATASET_KEY)):
+            run = latest_source(session, DecisionRun, case.id)
+            assert run and run.status == "COMPLETED"
+            response = client.get(f"/api/v1/decisions/{run.id}")
+            assert response.status_code == 200
+            detail = response.json()
+            assert "expected_decision" not in detail["input_snapshot"]["case"]
+            assert detail["run"]["examination_run_pk"] and detail["run"]["risk_run_pk"]
+            assert (
+                detail["workflow"]["final_outcome"] != "PASS"
+                or detail["workflow"]["maker_actor_id"] != detail["workflow"]["checker_actor_id"]
+            )
+            for role in (
+                "maker.demo",
+                "checker.demo",
+                "trade.demo",
+                "compliance.demo",
+                "legal.demo",
+                "supervisor.demo",
+            ):
+                assert client.get(f"/api/v1/decisions/{run.id}?actor_id={role}").status_code == 200
+            audit = client.get(f"/api/v1/cases/{case.case_id}/audit")
+            assert audit.status_code == 200 and audit.json()
+            assert client.get(f"/api/v1/cases/{case.case_id}/workflow").status_code == 200
+            assert client.get(f"/api/v1/cases/{case.case_id}/tasks").status_code == 200

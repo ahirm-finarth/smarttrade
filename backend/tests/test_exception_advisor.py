@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.integrations.llm.client import LLMUnavailable
 from app.schemas.advisory import AdvisoryRequest
-from app.services.exception_advisor import draft_exception_advice
+from app.services.exception_advisor import advisory_input, draft_exception_advice
 from tests.test_examination_engine import database as database_fixture  # noqa: F401
-from tests.test_governed_workflow import SETTINGS, clean_decision
+from tests.test_governed_workflow import SETTINGS, action, clean_decision
 
 
 def response(run):
@@ -66,3 +66,40 @@ def test_invalid_advisory_is_rejected_and_never_persisted(database, change):
             draft_exception_advice(s, SETTINGS, run.id, AdvisoryRequest(), MockAdvisor(output))
         assert not any(e.event_type == "EXCEPTION_SUMMARY_GENERATED" for e in run.events)
         assert run.workflow.final_outcome is None
+
+
+def test_advisory_distinguishes_resolved_governance_from_original_open_findings(database):
+    from app.services.decision_overrides import apply_override
+    from tests.test_decision_overrides import override_payload, reviewed_refer
+
+    with Session(database) as s:
+        run = reviewed_refer(s)
+        run = apply_override(s, SETTINGS, run.id, override_payload(run))
+        run = action(s, run, "MAKER_REVIEW", "maker.demo", "SUBMIT_FOR_CHECKER")
+        run = action(s, run, "CHECKER_APPROVAL", "checker.demo", "APPROVE")
+        inputs = advisory_input(run)
+        assert inputs["recommended_decision"] == "REFER"
+        assert inputs["governance"]["final_outcome"] == "PASS"
+        assert inputs["governance"]["unresolved_reason_ids"] == []
+        assert inputs["governance"]["latest_resolutions"]
+        assert inputs["governance"]["accepted_exception_reason_ids"]
+        assert any(r["status"] == "OPEN" for r in inputs["reasons"])
+        assert "rationale" not in str(inputs["governance"])
+
+
+def test_workflow_change_during_drafting_discards_advisory_without_undoing_action(database):
+    from app.services.workflow_controls import WorkflowConflict
+
+    with Session(database) as s:
+        run = clean_decision(s)
+
+        class RacingAdvisor:
+            def structured(self, messages, schema, max_tokens):
+                action(s, run, "MAKER_REVIEW", "maker.demo", "SUBMIT_FOR_CHECKER")
+                return response(run)
+
+        with pytest.raises(WorkflowConflict, match="changed while drafting"):
+            draft_exception_advice(s, SETTINGS, run.id, AdvisoryRequest(), RacingAdvisor())
+        s.refresh(run.workflow)
+        assert run.workflow.state == "AWAITING_CHECKER"
+        assert not any(e.event_type == "EXCEPTION_SUMMARY_GENERATED" for e in run.events)

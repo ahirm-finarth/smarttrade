@@ -1,17 +1,17 @@
 # FinArth Smart Trade
 
-Phase 4 adds **auditable risk orchestration, replaceable synthetic providers and local duplicate trade checks** to the source-PDF and documentary examination workbench. Operational parties and current source facts produce separate risk signals with provider/policy provenance, immutable history and explicit unchecked or incomplete results. Runtime risk checks do not call the LLM or read risk-event/discrepancy ground truth.
+Phase 5 adds **deterministic recommendations and governed demo approvals** to the source-PDF, documentary examination and risk workbench. System PASS / REFER / BLOCK stays separate from specialist resolutions, supervisory exception acceptance and final maker/checker outcomes. Decision history and audit links retain exact source evidence and versions.
 
-**Synthetic Demo Data:** supplied fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected PASS / REFER / BLOCK outcomes, reference findings/risks and approval events remain supplied references. Documentary examination is calculated separately and is not a final trade decision.
+**Synthetic Demo Data:** all fixtures are fictional. Preserve every **SYNTHETIC DEMO — NOT A FINANCIAL INSTRUMENT** marking. Expected outcomes, reference findings/risks and supplied approval events remain separate reference data. Demo identities are selectable roles, not production authentication or execution authority.
 
-Phase 4 is on [`phase-4`](https://github.com/ahirm-finarth/smarttrade/tree/phase-4), based on validated [`phase-3`](https://github.com/ahirm-finarth/smarttrade/tree/phase-3). Earlier work remains on [`phase-2`](https://github.com/ahirm-finarth/smarttrade/tree/phase-2) and [`phase-1`](https://github.com/ahirm-finarth/smarttrade/tree/phase-1). See [Phase 4 architecture](docs/PHASE4_ARCHITECTURE.md), [actual Phase 4 validation](docs/PHASE4_VALIDATION.md) and [Phase 3 evidence](docs/PHASE3_VALIDATION.md).
+Phase 5 is on [`phase-5`](https://github.com/ahirm-finarth/smarttrade/tree/phase-5), based on validated [`phase-4`](https://github.com/ahirm-finarth/smarttrade/tree/phase-4). Earlier branches remain intact. See [Phase 5 architecture](docs/PHASE5_ARCHITECTURE.md), [Phase 5 validation](docs/PHASE5_VALIDATION.md), and [Phase 4 validation](docs/PHASE4_VALIDATION.md).
 
 ## Native setup
 
 Use Python 3.12+, uv, Node.js 20.9+ (verified with Node 22), npm, and the existing external MySQL 8-compatible database. No Docker or additional database service is used.
 
 ```sh
-git clone --branch phase-4 https://github.com/ahirm-finarth/smarttrade.git
+git clone --branch phase-5 https://github.com/ahirm-finarth/smarttrade.git
 cd smarttrade
 make setup
 # Only if no credential file already exists:
@@ -63,7 +63,7 @@ make frontend
 ```
 
 - Dashboard: http://localhost:3000/
-- Case workspace: `/cases/{case_id}`; select **Documents**, **Examination** or **Risk & Compliance**.
+- Case workspace: `/cases/{case_id}`; select **Documents**, **Examination**, **Risk & Compliance**, **Decision**, **Workflow** or **Audit**.
 - Document workspace: `/documents/{document_id}` (the internal numeric inventory ID).
 - Backend health: http://localhost:8000/health
 - API documentation: http://localhost:8000/docs
@@ -190,7 +190,7 @@ docs/                             Phase 1 and Phase 2 evidence
 
 ## Deferred scope
 
-Phase 4 stops at separate risk signals, synthetic providers and explainable local duplicate candidates. Phase 5 or later owns final PASS / REFER / BLOCK decisions, the combined documentary/risk matrix, maker/checker actions, overrides, delegated authority, approval matrices, payment release, SWIFT/core trade posting, EDPMS/IDPMS, real sanctions/vessel/fair-value vendors, regulatory RAG/UCP/ISBP retrieval, MiniLM/embeddings/vector databases, Smart Insights and post-event monitoring. OCR/vision, cloud storage, distributed processing, richer multi-line schemas, facility/credit controls and production access controls require later work.
+Phase 5 stops at governed synthetic decisions. No payment execution, SWIFT generation/submission, core trade/core banking posting, EDPMS/IDPMS, real sanctions/vessel/price providers, regulatory RAG/UCP/ISBP retrieval, MiniLM/embeddings/vector database, Smart Insights chatbot, post-event/guarantee expiry/export realization/import evidence monitoring or automated customer email. Production identity/delegated financial authority, real waivers, facility/credit controls, OCR/vision, Docker, cloud storage and distributed processing remain later work.
 
 ## Phase 3 examination
 
@@ -250,3 +250,25 @@ Eight routes under `/api/v1`:
 | GET | `/cases/{case_id}/duplicate-candidates` | Read-only current cross-case search |
 
 Ruleset `risk-v1` has eight rules across screening, country, port, vessel, duplicate, goods and fair value. The five demo cases yield three supported signals on the risk Import LC and zero material risk findings on the other cases. Independent evaluation: TP 3, FP 0, FN 2; precision 1.0000, recall 0.6000, F1 0.7500. The supplied fair-value label lacks a price band, and the labelled historical invoice is absent from stored cases. Both remain counted misses; no price, historical invoice or financing event is fabricated.
+
+## Phase 5 decisions, workflow and audit
+
+Use **Run decision** after current examination and risk runs exist. Decision policy `decision-v1` considers actual findings and control completeness, never expected labels. Mandatory demo controls are screening, port, vessel and local duplicate search. Country/goods/price references and the absent financing-event ledger are explicitly optional and remain unchecked; a PASS is limited to this policy, not live clearance.
+
+Use **Workflow** to select a fictional identity: `maker.demo`, `checker.demo`, `trade.demo`, `compliance.demo`, `legal.demo`, `supervisor.demo`, or `dual.demo` (maker/checker SoD demonstration). Record a rationale for each action. Only backend-authorized actions appear. An actor who submitted as maker can never check the same decision, including after return to another maker. System recommendations alone do not finalize cases.
+
+REFER issues route to trade, compliance or legal. Documentary issues require specialist confirmation and explicit supervisor acceptance before maker/checker eligibility; acceptance leaves the system REFER unchanged. Missing mandatory evidence, incomplete comparisons and stale inputs cannot be waived. Confirmed hard BLOCK cannot be overridden, even by a supervisor. Guarantee remains pending source-supported review rather than inventing a breach.
+
+**Audit** combines existing processing/examination/risk histories and all decision/governance events. Its source links select the exact historical run. The original **Approvals** tab remains supplied reference history.
+
+The optional **Exception Resolution Agent** is an explicit advisory action inside Decision. It uses saved reasons/evidence plus structured governed state and unresolved reason IDs, and validates IDs/queues/strict JSON. A workflow change during generation discards the draft. It cannot resolve findings, change routing or approve. Draft prose requires human review. Endpoint unavailability does not block deterministic decisions/workflows.
+
+```sh
+make run-demo-decisions
+# Explicit synthetic actions only; appends fresh decisions, reviews and maker/checker outcomes:
+make run-demo-workflows
+# Reference labels are used only after recommendations exist:
+make evaluate-demo-decisions
+```
+
+The five-case workflow demonstration records four governed PASS outcomes (two after reviewed REFER exception acceptance) and leaves Guarantee NEEDS_INFORMATION. No real customer waiver, payment or posting occurs. Local JSON reports are ignored. Full routes, state machine and safety boundaries are in [Phase 5 architecture](docs/PHASE5_ARCHITECTURE.md); executed checks, demo results and exact commits are in [Phase 5 validation](docs/PHASE5_VALIDATION.md).

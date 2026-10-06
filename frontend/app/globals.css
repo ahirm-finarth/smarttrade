@@ -1881,6 +1881,9 @@ mark {
 }
 
 /* Governed decision and approval ledger extends the existing evidence surfaces. */
+.decision-workspace .button {
+  min-height: 44px;
+}
 .decision-workspace label {
   display: grid;
   gap: 6px;

@@ -379,6 +379,7 @@ export function GovernedApprovals({
                 check the same decision. Select a different checker.
               </p>
             )}
+          <SectionHeading title="Workflow tasks" count={data.tasks.length} />
           <p className="source-footnote">
             Workflow revision {data.workflow?.revision} ·{" "}
             <Link
@@ -387,7 +388,6 @@ export function GovernedApprovals({
               Open decision reasons and source evidence
             </Link>
           </p>
-          <SectionHeading title="Workflow tasks" count={data.tasks.length} />
           {data.tasks.map((task) => (
             <TaskForm
               key={`${data.run.id}:${actorId}:${task.id}`}
